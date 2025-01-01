@@ -1,6 +1,6 @@
 // test_tracing_config.rs
 
-#![allow(missing_docs)]
+//! Integration tests for [`meadows::tracing::config::init`].
 
 use std::thread;
 use std::time::Duration;

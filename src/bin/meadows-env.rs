@@ -1,6 +1,6 @@
 // meadows-env.rs
 
-#![allow(missing_docs)]
+//! A program dumping all environment variables.
 
 use meadows::env;
 

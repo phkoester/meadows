@@ -1,6 +1,7 @@
 // bench_log.rs
 
-#![allow(missing_docs)]
+//! Benchmarks measuring [`log::info`] with [`tracing::info`].
+
 #![feature(test)]
 
 use std::sync::Once;

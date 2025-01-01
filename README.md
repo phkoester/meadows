@@ -7,7 +7,7 @@
 
 `meadows` is an experimental library written in Rust.
 
-**NOTE:** For the time being, it is not recommended for public use.
+**NOTE:** For the time being, it is not recommended for public use. Use it at your own risk.
 
 ## License
 

@@ -16,7 +16,7 @@
       "sourceMap": [
         [
           "${env:GAIA_RUSTC_TOOLCHAIN}/library/",
-          "${env:HOME}/.rustup/toolchains/${env:GAIA_RUSTUP_TOOLCHAIN}/lib/rustlib/src/rust/library/"
+          "${env:GAIA_USER_HOME}/.rustup/toolchains/${env:GAIA_RUSTUP_TOOLCHAIN}/lib/rustlib/src/rust/library/"
         ]
       ]
     },

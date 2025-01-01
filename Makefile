@@ -24,7 +24,11 @@ coverage:
 	@echo Done.
 
 toolchain:
+	@# Show the `rustc` hash after "commit-hash"
+	@# export GAIA_RUSTC_TOOLCHAIN=/rustc/<HASH>
+	@rustc --version -v
+	@# Show `RUSTUP_TOOLCHAIN` as assigned by Cargo
+	@# export GAIA_RUSTUP_TOOLCHAIN=...
 	@cargo r --bin meadows-env | grep ^RUSTUP_TOOLCHAIN
-	@strings target/debug/meadows-env | grep -o '^/rustc/[^/]\+/' | uniq
 
 # EOF

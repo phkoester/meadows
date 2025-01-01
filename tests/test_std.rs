@@ -1,6 +1,6 @@
-// test_rust.rs
+// test_std.rs
 
-#![allow(missing_docs)]
+//! A few integration tests related to the standard library.
 
 use std::mem;
 use std::num::NonZero;
@@ -12,7 +12,7 @@ fn test_div_i32() {
 }
 
 #[test]
-fn test_size_of_option() {
+fn test_std_mem_size_of() {
   assert_eq!(mem::size_of::<i32>(), 4);
   assert_eq!(mem::size_of::<Option<i32>>(), 8);
   assert_eq!(mem::size_of::<Option<NonZero<i32>>>(), 4);

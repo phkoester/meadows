@@ -70,6 +70,7 @@ enum FileNameType {
 /// | Name   | Description
 /// | :----- | :-----------
 /// | `dir`  | The canonical directory of the executable, as returned by [`dir`](crate::process::dir)
+/// | `home` | The current user's home directory, as returned by [`dirs::home_dir`]
 /// | `name` | The canonical name of the executable, as returned by [`name`](crate::process::name)
 /// | `path` | The canonical path of the executable, as returned by [`path`](crate::process::path)
 /// | `pid`  | The process ID (PID) of the executable
@@ -402,6 +403,9 @@ fn set_env_vars_impl(exec_type: ExecType, is_debug: bool) {
   };
 
   set_env_var("dir", crate::process::dir().as_ref());
+  if let Some(dir) = dirs::home_dir() {
+    set_env_var("home", dir.as_ref());
+  }
   set_env_var("name", crate::process::name());
   set_env_var("path", crate::process::path().as_ref());
   set_env_var("pid", process::id().to_string().as_ref());
