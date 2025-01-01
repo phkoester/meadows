@@ -1,0 +1,48 @@
+#
+# Cargo.toml
+#
+
+[package]
+
+name = "meadows"
+version = "0.1.2"
+
+authors = ["Philip Köster"]
+description = "Meadows: an experimental collection of utilities"
+default-run = "meadows-bare"
+documentation = "https://docs.rs/meadows"
+edition = "2021"
+license = "Apache-2.0 OR MIT"
+
+[dependencies]
+
+anyhow = "1.0"
+dirs = "5.0"
+dunce = "1.0"
+nu-ansi-term = "0.50"
+thiserror = "2.0"
+tracing = "0.1"
+tracing-config = { version = "0.1", optional = true }
+
+[dev-dependencies]
+
+meadows = { path = ".", features = ["tracing_config"] }
+
+[features]
+
+tracing_config = ["dep:tracing-config"]
+
+[lints.clippy]
+
+pedantic = "warn"
+
+enum-glob-use = "allow"
+if_not_else = "allow"
+module_name_repetitions = "allow"
+uninlined_format_args = "allow" # Doesn't work!
+
+[lints.rust]
+
+missing_docs = "warn"
+
+# EOF

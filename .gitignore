@@ -1,0 +1,10 @@
+#
+# .gitignore
+#
+
+*.log
+*.profraw
+
+/target
+
+# EOF

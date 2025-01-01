@@ -1,0 +1,36 @@
+#
+# tracing.toml
+#
+# A detailed example file can be found here:
+#
+#   https://docs.rs/tracing-config/latest/tracing_config/config/model/index.html
+#
+
+title = "Meadows Doc and Unit Tests"
+
+[filter.root]
+
+directives = ["tracing_config::config=warn"]
+level = "trace"
+
+[layer.file]
+
+ansi = false
+file = true
+formatter = "full" # "full", "compact", "pretty", "json"
+line = true
+span_events = "full" # "new", "enter", "exit", "close", "none", "active", "full"
+thread_names = true
+type = "fmt" # "fmt", "json", "sifting"
+writer = "file"
+
+[writer.file]
+
+directory_path = "${env:dir}"
+file_name = "${env:test_name}"
+lossy = true
+non_blocking = true
+rotation = "never" # "minutely", "hourly", "daily" (default), "never"
+type = "file" # "file", "standard_output"
+
+# EOF

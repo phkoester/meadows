@@ -1,0 +1,36 @@
+// bench_std.rs
+
+#![allow(missing_docs)]
+#![feature(test)]
+
+// Functions ------------------------------------------------------------------------------------------------
+
+fn use_string_from(v: &str) -> String { String::from(v) }
+
+fn use_str_to_owned(v: &str) -> String { v.to_owned() }
+
+fn use_str_to_string(v: &str) -> String { v.to_string() }
+
+// Tests ----------------------------------------------------------------------------------------------------
+
+#[cfg(test)]
+mod tests {
+  extern crate test;
+
+  use test::Bencher;
+
+  use super::*;
+
+  #[bench]
+  fn bench_std_str_to_owned(b: &mut Bencher) {
+    b.iter(|| format!("{}", use_str_to_owned("hello")));
+  }
+
+  #[bench]
+  fn bench_std_str_to_string(b: &mut Bencher) { b.iter(|| format!("{}", use_str_to_string("hello"))); }
+
+  #[bench]
+  fn bench_std_string_from(b: &mut Bencher) { b.iter(|| format!("{}", use_string_from("hello"))); }
+}
+
+// EOF

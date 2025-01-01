@@ -1,0 +1,41 @@
+/*
+ * launch.json
+ */
+
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "lldb-dap",
+      "request": "launch",
+      "name": "meadow",
+      "program": "${workspaceRoot}/target/debug/meadow",
+      "args": [],
+      "env": [],
+      "cwd": "${workspaceRoot}",
+      "sourceMap": [
+        [
+          "${env:GAIA_RUSTC_TOOLCHAIN}/library/",
+          "${env:HOME}/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/"
+        ]
+      ]
+    },
+    {
+      "type": "lldb-dap",
+      "request": "launch",
+      "name": "webby",
+      "program": "${workspaceRoot}/target/debug/webby",
+      "args": [],
+      "env": [],
+      "cwd": "${workspaceRoot}",
+      "sourceMap": [
+        [
+          "${env:GAIA_RUSTC_TOOLCHAIN}/library/",
+          "${env:HOME}/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/"
+        ]
+      ]
+    },
+  ]
+}
+
+// EOF
