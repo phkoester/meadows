@@ -15,6 +15,16 @@ edition = "2021"
 license = "Apache-2.0 OR MIT"
 repository = "https://github.com/phkoester/meadows"
 
+exclude = [
+  "/.github",
+  "/.gitignore",
+  "/.vscode",
+  "/Makefile",
+  "/meadows.code-workspace",
+  "/project.json",
+  "/rustfmt.toml"
+]
+
 [dependencies]
 
 anyhow = "1.0"
