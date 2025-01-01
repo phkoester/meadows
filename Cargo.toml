@@ -13,6 +13,7 @@ default-run = "meadows-bare"
 documentation = "https://docs.rs/meadows"
 edition = "2021"
 license = "Apache-2.0 OR MIT"
+repository = "https://github.com/phkoester/meadows"
 
 [dependencies]
 
@@ -26,7 +27,9 @@ tracing-config = { version = "0.1", optional = true }
 
 [dev-dependencies]
 
+log = "0.4"
 meadows = { path = ".", features = ["tracing_config"] }
+tracing-log = "0.2"
 
 [features]
 
@@ -34,12 +37,13 @@ tracing_config = ["dep:tracing-config"]
 
 [lints.clippy]
 
-pedantic = "warn"
+pedantic = { level = "warn", priority = -1 }
 
 enum-glob-use = "allow"
 if_not_else = "allow"
 module_name_repetitions = "allow"
-uninlined_format_args = "allow" # Doesn't work!
+too_many_lines = "allow"
+uninlined_format_args = "allow"
 
 [lints.rust]
 

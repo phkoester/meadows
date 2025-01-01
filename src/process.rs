@@ -12,12 +12,12 @@ use anyhow::anyhow;
 // `ExecType` -----------------------------------------------------------------------------------------------
 
 /// An enum for the type of the Rust executable.
-///
-/// Any `ExecType` other than [`Standard`](ExecType::Standard) identifies a test executable.
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum ExecType {
-  /// A standard executable.
-  Standard,
+  /// A standard binary executable.
+  Binary,
+  /// An example executable.
+  Example,
   /// A doc-test executable.
   DocTest,
   /// A unit-test executable.
@@ -30,18 +30,16 @@ pub enum ExecType {
 
 impl ExecType {
   /// Returns `true` if the executable type denotes a test executable.
-  /// 
-  /// This is true for all variants except [`Standard`](ExecType::Standard).
   #[must_use]
-  pub fn is_test(&self) -> bool { !matches!(self, Self::Standard) }
+  pub fn is_test(&self) -> bool { !matches!(self, Self::Binary | Self::Example) }
 }
 
 // Functions ------------------------------------------------------------------------------------------------
 
 /// Returns the canonical directory of the executable.
-/// 
+///
 /// # Panics
-/// 
+///
 /// Panics if the canonical path has no parent.
 #[must_use]
 pub fn dir() -> &'static PathBuf {
@@ -59,9 +57,9 @@ pub fn dir() -> &'static PathBuf {
 }
 
 /// Returns the invocation directory of the executable.
-/// 
+///
 /// # Panics
-/// 
+///
 /// Panics if the invocation path has no parent.
 #[must_use]
 pub fn inv_dir() -> &'static PathBuf {
@@ -122,9 +120,9 @@ pub fn name() -> &'static OsString {
 }
 
 /// Returns the canonical path of the executable.
-/// 
+///
 /// # Panics
-/// 
+///
 /// Panics if canonicalizing the invocation path fails.
 #[must_use]
 pub fn path() -> &'static PathBuf {

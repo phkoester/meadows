@@ -24,10 +24,7 @@ fn run() -> anyhow::Result<()> {
 fn main() {
   // Init logging
 
-  let init_result = config::try_init(&Config::builder(ExecType::Standard).build());
-  if let Err(err) = init_result {
-    process_error!("{:#}", err.context("Cannot initialize logging"));
-  }
+  config::init(&Config::builder(ExecType::Example).build());
 
   // Run
 

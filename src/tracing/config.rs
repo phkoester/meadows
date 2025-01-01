@@ -5,15 +5,15 @@
 //! This module requires the `tracing_config` feature. It is a wrapper around the [`tracing_config`] crate,
 //! using Meadows's configuration-file search from [`crate::config`].
 //!
-//! For standard executables, use the [`try_init`] function. For test executables, use the [`init_test`]
+//! For binary executables, use the [`try_init`] function. For example and test executables, use the [`init`]
 //! function.
 //!
 //! Unless the values are explicitly set in [`Config`], the following environment variables are used:
 //!
-//! Name                   | Description
-//! :--------------------- | :----------
-//! `tracing_config`       | One or more paths, separated by the system-dependent path separator. Each path may point to a file or a directory
-//! `tracing_config_debug` | If set to `"true"`, the debug mode is enabled
+//! | Name                   | Description
+//! | :--------------------- | :----------
+//! | `tracing_config`       | One or more paths, separated by the system-dependent path separator. Each path may point to a file or a directory
+//! | `tracing_config_debug` | If set to `true`, the debug mode is enabled
 
 use std::env;
 use std::ffi::OsString;
@@ -36,7 +36,7 @@ use crate::process_note;
 /// This struct holds the initialization configuration.
 ///
 /// You create a [`Config`] using the [`Config::builder`] function and then pass it to either [`try_init`] or
-/// [`init_test`].
+/// [`init`].
 #[derive(Debug)]
 pub struct Config {
   exec_type: ExecType,
@@ -171,7 +171,11 @@ fn init_file(config: &Config, file: &Path) -> Result<ArcMutexGuard, TracingConfi
     tracing_config::config::read_config(file, tracing_config::config::RESOLVE_FROM_ENV_DEPTH)?;
 
   if config.print_path {
-    process_note!("Loaded configuration file `{}` titled \"{}\"", file.display(), tracing_config.title);
+    process_note!(
+            "Loaded configuration file `{}` titled \"{}\"",
+            file.display(),
+            tracing_config.title
+        );
   }
 
   // Apply configuration
@@ -179,7 +183,7 @@ fn init_file(config: &Config, file: &Path) -> Result<ArcMutexGuard, TracingConfi
   tracing_config::config::init_config(config.is_debug, &tracing_config)
 }
 
-/// Initializes `tracing` for a test executable with the given configuration.
+/// Initializes `tracing` for an example or test executable with the given configuration.
 ///
 /// The function can be called multiple times, but internally, it configures `tracing` exactly once per
 /// process. Because it stores the guard in a static variable, its result may usually be dismissed.
@@ -191,19 +195,19 @@ fn init_file(config: &Config, file: &Path) -> Result<ArcMutexGuard, TracingConfi
 ///
 /// Panics if
 ///
-/// - `config` requires a standard-executable type;
+/// - `config.exec_type` is [`ExecType::Binary`];
 /// - the initialization fails.
 ///
 /// # Examples
 ///
 /// ```
-/// use meadows::process_error;
 /// use meadows::process;
+/// use meadows::process_error;
 /// use meadows::tracing::config;
 ///
-/// // This function can be called from every test. `init_test` may be called multiple times, but internally,
-/// // it configures `tracing` exactly once per process
-/// fn set_up() { config::init_test(&config::Config::builder(process::ExecType::UnitTest).build()); }
+/// // This function can be called from every test. `init` may be called multiple times, but internally, it
+/// // configures `tracing` exactly once per process
+/// fn set_up() { config::init(&config::Config::builder(process::ExecType::UnitTest).build()); }
 ///
 /// #[test]
 /// fn test_1() {
@@ -218,14 +222,14 @@ fn init_file(config: &Config, file: &Path) -> Result<ArcMutexGuard, TracingConfi
 /// }
 /// ```
 #[allow(clippy::test_attr_in_doctest)]
-pub fn init_test(config: &Config) -> &'static ArcMutexGuard {
+pub fn init(config: &Config) -> &'static ArcMutexGuard {
   static VAL: OnceLock<ArcMutexGuard> = OnceLock::new();
   VAL.get_or_init(|| {
-    assert!(config.exec_type.is_test());
+    assert!(config.exec_type != ExecType::Binary);
     match try_init_impl(config) {
       Ok(guard) => guard,
       Err(err) => {
-        process_error!("{:?}", err.context("Cannot initialize logging"));
+        process_error!("{:#}", err.context("Cannot initialize logging"));
         process::exit(2);
       }
     }
@@ -245,7 +249,8 @@ fn start_message(config: &Config, config_path: &Path) -> String {
   let inv_path = crate::process::inv_path();
   let path = crate::process::path();
 
-  ret.push_str(&format!("\
+  ret.push_str(&format!(
+        "\
 Process started: {inv_name}
 
 Log-configuration file: {config_path:?}
@@ -253,7 +258,8 @@ Log-configuration file: {config_path:?}
 Current directory: {current_dir_str}
 Invocation path  : {inv_path:?}
 Path             : {path:?}
-"));
+"
+    ));
 
   // Arguments, if any
 
@@ -270,11 +276,11 @@ Path             : {path:?}
   ret.fence('#', config.text_width)
 }
 
-/// Initializes `tracing` for a standard executable with the given configuration.
+/// Initializes `tracing` for a binary executable with the given configuration.
 ///
 /// This function should be called as early as possible on process startup. Its result contains a guard
 /// that must be held as long as possible, preferably until the end of `main`. If an error is returned, that
-/// error may be printed, but the process should typically continue to run.
+/// error is typically printed, but the process should continue to run.
 ///
 /// For detailed information about the usage of the environment and the file search, see
 /// [`crate::config::find_config_file`].
@@ -288,7 +294,7 @@ Path             : {path:?}
 ///
 /// # Panics
 ///
-/// Panics if `config` requires a test-executable type.
+/// Panics if `config.exec_type` is not [`ExecType::Binary`].
 ///
 /// # Examples
 ///
@@ -299,7 +305,7 @@ Path             : {path:?}
 ///
 /// fn main() {
 ///   // Call `try_init` in `main`, as early as possible, hold the result
-///   let init_result = config::try_init(&config::Config::builder(process::ExecType::Standard).build());
+///   let init_result = config::try_init(&config::Config::builder(process::ExecType::Binary).build());
 ///   if let Err(err) = init_result {
 ///     // Print the error, but continue running
 ///     process_error!("{:#}", err.context("Cannot initialize logging"));
@@ -309,7 +315,7 @@ Path             : {path:?}
 /// }
 #[allow(clippy::needless_doctest_main)]
 pub fn try_init(config: &Config) -> anyhow::Result<ArcMutexGuard> {
-  assert!(!config.exec_type.is_test());
+  assert!(config.exec_type == ExecType::Binary);
   try_init_impl(config)
 }
 
@@ -344,24 +350,24 @@ mod tests {
 
   use super::*;
 
-  fn set_up() { init_test(&Config::builder(ExecType::UnitTest).build()); }
+  fn set_up() { init(&Config::builder(ExecType::UnitTest).build()); }
 
   // Functions ----------------------------------------------------------------------------------------------
 
   #[test]
-  fn test_init_test_1() {
+  fn test_init_1() {
     set_up();
     for i in 0..4 {
-      info!(i, "test_init_test_1");
+      info!(i, "test_init_1");
       thread::sleep(Duration::from_millis(1));
     }
   }
 
   #[test]
-  fn test_init_test_2() {
+  fn test_init_2() {
     set_up();
     for i in 0..4 {
-      info!(i, "test_init_test_2");
+      info!(i, "test_init_2");
       thread::sleep(Duration::from_millis(1));
     }
   }

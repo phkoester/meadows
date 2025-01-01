@@ -283,11 +283,13 @@ dependencies = [
  "anyhow",
  "dirs",
  "dunce",
+ "log",
  "meadows",
  "nu-ansi-term 0.50.1",
  "thiserror 2.0.9",
  "tracing",
  "tracing-config",
+ "tracing-log",
 ]
 
 [[package]]

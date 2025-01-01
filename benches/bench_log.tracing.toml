@@ -1,0 +1,30 @@
+#
+# bench_log.tracing.toml
+#
+# A detailed example file can be found here:
+#
+#   https://docs.rs/tracing-config/latest/tracing_config/config/model/index.html
+#
+
+title = "Roy `bench_log` Benchmark Tests"
+
+[filter.root]
+
+level = "warn" # The benches should not actually log anything
+
+[layer.stdout]
+
+ansi = true
+file = true
+formatter = "full" # "full", "compact", "pretty", "json"
+line = true
+span_events = "full" # "new", "enter", "exit", "close", "none", "active", "full"
+thread_names = true
+type = "fmt" # "fmt", "json", "sifting"
+writer = "stdout"
+
+[writer.stdout]
+
+type = "standard_output" # "file", "standard_output"
+
+# EOF
