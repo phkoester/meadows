@@ -2,7 +2,7 @@
 
 [![Build Status][status-img]][status]
 
-[status-img]: https://github.com/phkoester/meadows/actions/workflows/ci.yml/badge.svg?branch=master
+[status-img]: https://github.com/phkoester/meadows/actions/workflows/ci.yml/badge.svg?branch=main
 [status]: https://github.com/phkoester/meadows/actions/workflows/ci.yml
 
 `meadows` is an experimental library written in Rust.
