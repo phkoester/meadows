@@ -23,4 +23,8 @@ coverage:
 	@echo Created $(COVERAGE_DIR)/html/index.html
 	@echo Done.
 
+toolchain:
+	@cargo r --bin meadows-env | grep ^RUSTUP_TOOLCHAIN
+	@strings target/debug/meadows-env | grep -o '^/rustc/[^/]\+/' | uniq
+
 # EOF

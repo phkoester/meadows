@@ -1,5 +1,6 @@
 // bench_log.rs
 
+#![allow(missing_docs)]
 #![feature(test)]
 
 use std::sync::Once;

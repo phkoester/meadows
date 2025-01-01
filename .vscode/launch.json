@@ -8,30 +8,15 @@
     {
       "type": "lldb-dap",
       "request": "launch",
-      "name": "meadow",
-      "program": "${workspaceRoot}/target/debug/meadow",
+      "name": "meadows-bare",
+      "program": "${workspaceRoot}/target/debug/meadows-bare",
       "args": [],
       "env": [],
       "cwd": "${workspaceRoot}",
       "sourceMap": [
         [
           "${env:GAIA_RUSTC_TOOLCHAIN}/library/",
-          "${env:HOME}/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/"
-        ]
-      ]
-    },
-    {
-      "type": "lldb-dap",
-      "request": "launch",
-      "name": "webby",
-      "program": "${workspaceRoot}/target/debug/webby",
-      "args": [],
-      "env": [],
-      "cwd": "${workspaceRoot}",
-      "sourceMap": [
-        [
-          "${env:GAIA_RUSTC_TOOLCHAIN}/library/",
-          "${env:HOME}/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/"
+          "${env:HOME}/.rustup/toolchains/${env:GAIA_RUSTUP_TOOLCHAIN}/lib/rustlib/src/rust/library/"
         ]
       ]
     },

@@ -5,7 +5,7 @@
 [package]
 
 name = "meadows"
-version = "0.1.2"
+version = "0.1.3"
 
 authors = ["Philip Köster"]
 description = "An experimental library written in Rust"
