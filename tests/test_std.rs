@@ -1,6 +1,6 @@
 // test_std.rs
 
-//! A few integration tests related to the standard library.
+//! Integration tests related to the standard library.
 
 use std::mem;
 use std::num::NonZero;
