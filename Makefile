@@ -17,7 +17,7 @@ coverage:
 	@grcov --binary-path $(BIN_DIR) -s . -t html --branch --ignore-not-existing \
 	  -o $(COVERAGE_DIR)/html .
 	@# Remove `.profraw` files
-	@rm $$(find -name "cargo-test-*.profraw")
+	@rm -v $$(find -name "cargo-test-*.profraw")
 	@# Remove doc-test executables
 	@rm -rfv $(BIN_DIR)/src_*_rs_*
 	@echo Created $(COVERAGE_DIR)/html/index.html
