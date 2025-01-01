@@ -8,7 +8,7 @@ name = "meadows"
 version = "0.1.2"
 
 authors = ["Philip Köster"]
-description = "Meadows: an experimental collection of utilities"
+description = "An experimental library written in Rust"
 default-run = "meadows-bare"
 documentation = "https://docs.rs/meadows"
 edition = "2021"

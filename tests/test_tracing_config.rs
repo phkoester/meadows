@@ -13,19 +13,19 @@ use tracing::info;
 fn set_up() { config::init(&Config::builder(ExecType::IntegTest).build()); }
 
 #[test]
-fn test_tracing_config_init_test_1() {
+fn test_tracing_config_init_1() {
   set_up();
   for i in 0..4 {
-    info!(i, "test_tracing_config_init_test_1");
+    info!(i, "test_tracing_config_init_1");
     thread::sleep(Duration::from_millis(1));
   }
 }
 
 #[test]
-fn test_tracing_config_init_test_2() {
+fn test_tracing_config_init_2() {
   set_up();
   for i in 0..4 {
-    info!(i, "test_tracing_config_init_test_2");
+    info!(i, "test_tracing_config_init_2");
     thread::sleep(Duration::from_millis(1));
   }
 }

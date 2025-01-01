@@ -1,7 +1,8 @@
 # Meadows
 
-`meadows` is an experimental collection of general-purpose utilities. For the time being, it is not
-recommended for public use.
+`meadows` is an experimental library written in Rust.
+
+**NOTE:** For the time being, it is not recommended for public use.
 
 ## License
 
