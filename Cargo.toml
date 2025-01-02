@@ -14,6 +14,7 @@ documentation = "https://docs.rs/meadows"
 edition = "2021"
 license = "Apache-2.0 OR MIT"
 repository = "https://github.com/phkoester/meadows"
+rust-version = "1.78"
 
 exclude = [
   "/.github",
@@ -43,6 +44,8 @@ tracing-log = "0.2"
 
 [features]
 
+default = ["std"]
+std = []
 tracing_config = ["dep:tracing-config"]
 
 [lints.clippy]
