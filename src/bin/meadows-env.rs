@@ -1,6 +1,6 @@
 // meadows-env.rs
 
-//! A program dumping all environment variables.
+//! A program that dumps all environment variables.
 
 use meadows::env;
 
