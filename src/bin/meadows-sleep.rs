@@ -19,11 +19,6 @@ fn main() {
     n = arg.parse().expect("Invalid number");
   }
 
-  println!("inv_name: {:?}", meadows::process::inv_name());
-  println!("inv_path: {:?}", meadows::process::inv_path());
-  println!("name    : {:?}", meadows::process::name());
-  println!("path    : {:?}", meadows::process::path());
-
   if n > 0 {
     println!("Sleeping {n} seconds ...");
     thread::sleep(Duration::from_secs(n))

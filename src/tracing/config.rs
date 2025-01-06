@@ -200,7 +200,7 @@ fn init_file(config: &Config, file: &Path) -> Result<ArcMutexGuard, TracingConfi
 ///
 /// # Examples
 ///
-/// ```
+/// ```no_run
 /// use meadows::process;
 /// use meadows::process_error;
 /// use meadows::tracing::config;
@@ -221,10 +221,26 @@ fn init_file(config: &Config, file: &Path) -> Result<ArcMutexGuard, TracingConfi
 ///   // ...
 /// }
 /// ```
+/// 
+/// XXX Another example:
+/// 
+/// ```
+/// use meadows::process;
+/// use meadows::tracing::config;
+/// 
+/// config::init(&config::Config::builder(process::ExecType::DocTest).build());
+/// assert_eq!(process::inv_path().to_string_lossy(), "dong");
+/// tracing::info!("Hi freaks!");
+/// ```
 #[allow(clippy::test_attr_in_doctest)]
 pub fn init(config: &Config) -> &'static ArcMutexGuard {
   static VAL: OnceLock<ArcMutexGuard> = OnceLock::new();
   VAL.get_or_init(|| {
+    println!("inv_name: {:?}", crate::process::inv_name());
+    println!("inv_path: {:?}", crate::process::inv_path());
+    println!("name    : {:?}", crate::process::name());
+    println!("path    : {:?}", crate::process::path());
+  
     assert!(config.exec_type != ExecType::Binary);
     match try_init_impl(config) {
       Ok(guard) => guard,
