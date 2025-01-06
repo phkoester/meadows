@@ -16,6 +16,11 @@ use tracing::instrument;
 #[instrument(ret)]
 fn run() -> anyhow::Result<()> {
   println!("This is meadows-log");
+  println!("inv_name: {:?}", meadows::process::inv_name());
+  println!("inv_path: {:?}", meadows::process::inv_path());
+  println!("name    : {:?}", meadows::process::name());
+  println!("path    : {:?}", meadows::process::path());
+
   info!("A log message");
   println!("Done.");
   Ok(())
