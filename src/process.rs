@@ -3,11 +3,13 @@
 //! Process-related utilities.
 
 use std::env;
+use std::ffi::OsStr;
 use std::ffi::OsString;
 use std::path::PathBuf;
 use std::sync::OnceLock;
 
 use anyhow::anyhow;
+use regex::Regex;
 
 // `ExecType` -----------------------------------------------------------------------------------------------
 
@@ -78,7 +80,7 @@ pub fn inv_dir() -> &'static PathBuf {
 
 /// Returns the invocation name of the executable.
 ///
-/// In Windows, this is the file stem only, the file name otherwise.
+/// In Windows, this is the file stem only. In Unix, this is the file name.
 #[allow(clippy::missing_panics_doc)]
 #[must_use]
 pub fn inv_name() -> &'static OsString {
@@ -93,6 +95,17 @@ pub fn inv_name() -> &'static OsString {
 }
 
 /// Returns the invocation path of the executable.
+///
+/// 
+/// | Executable Type        | Linux Example for `inv_path()`
+/// | :--------------------- | :----------------------------
+/// | `Binary`               | `target/debug/a`
+/// | `Example`              | `target/debug/examples/a`
+/// | `DocTest`              | `/tmp/rustdoctestDWexge/rust_out`
+/// | `DocTest` (persistent) | `/home/alice/project/meadows/target/debug/deps/src_process_rs_123_0/rust_out`
+/// | `UnitTest`             | `/home/alice/project/meadows/target/debug/deps/meadows-c905bc0db64270b7`
+/// | `IntegTest`            | `/home/alice/project/meadows/target/debug/deps/test_std-df01c96339a9b446`
+/// | `BenchTest`            | `/home/alice/project/meadows/target/release/deps/bench_std-f98027946d1328b1`
 #[allow(clippy::missing_panics_doc)]
 #[must_use]
 pub fn inv_path() -> &'static PathBuf {
@@ -102,7 +115,7 @@ pub fn inv_path() -> &'static PathBuf {
 
 /// Returns the canonical name of the executable.
 ///
-/// In Windows, this is the file stem only, the file name otherwise.
+/// In Windows, this is the file stem only. In Unix, this is the file name.
 ///
 /// For test executables, the canonical name may end with a `-`, followed by a hash code. To strip the
 /// suffix, use [`test_name`].
@@ -139,18 +152,56 @@ pub fn path() -> &'static PathBuf {
 
 /// Returns the canonical test name of the executable.
 ///
-/// This is the canonical name as returned by [`name`], stripped of a trailing `-` and hash code, if any.
+/// This is the canonical name as returned by [`name`], stripped of a trailing `-` and hexadecimal number, if
+/// any.
+///
+/// # Panics
+///
+/// Panics if the canonical name is not a valid test-executable name.
 #[must_use]
 pub fn test_name() -> &'static OsString {
   static VAL: OnceLock<OsString> = OnceLock::new();
-  VAL.get_or_init(|| {
-    let name = name().to_string_lossy();
-    if let Some(index) = name.rfind('-') {
-      OsString::from(&name[0..index])
-    } else {
-      name.as_ref().into()
-    }
-  })
+  VAL.get_or_init(|| test_name_impl(name()))
+}
+
+fn test_name_impl(name: &OsStr) -> OsString {
+  // Special case: doc test
+  if name == "rust_out" {
+    return name.to_owned();
+  }
+
+  // Strip trailing `-` and 16-digit hex number
+  let re = Regex::new("-[0-9a-f]{16}$").unwrap();
+  let name = name.to_string_lossy();
+  assert!(re.is_match(name.as_ref()), "`{name}` is not a valid test-executable name");
+  name[0..name.len() - 17].into()
+}
+
+// Tests ====================================================================================================
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+
+  // Functions ----------------------------------------------------------------------------------------------
+
+  #[test]
+  fn test_test_name_impl() {
+    assert_eq!(test_name_impl(OsStr::new("rust_out")), "rust_out");
+    assert_eq!(test_name_impl(OsStr::new("a-b-0123456789abcdef")), "a-b");
+  }
+
+  #[test]
+  #[should_panic(expected="`a` is not a valid test-executable name")]
+  fn test_test_name_impl_fail_1() {
+    test_name_impl(OsStr::new("a"));
+  }
+
+  #[test]
+  #[should_panic(expected="`a-01234567` is not a valid test-executable name")]
+  fn test_test_name_impl_fail_2() {
+    test_name_impl(OsStr::new("a-01234567"));
+  }
 }
 
 // EOF

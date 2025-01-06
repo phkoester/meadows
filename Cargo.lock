@@ -286,6 +286,7 @@ dependencies = [
  "log",
  "meadows",
  "nu-ansi-term 0.50.1",
+ "regex",
  "thiserror 2.0.9",
  "tracing",
  "tracing-config",

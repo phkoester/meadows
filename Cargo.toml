@@ -32,6 +32,7 @@ anyhow = "1.0"
 dirs = "5.0"
 dunce = "1.0"
 nu-ansi-term = "0.50"
+regex = "1.11"
 # sysinfo
 thiserror = "2.0"
 tracing = "0.1"

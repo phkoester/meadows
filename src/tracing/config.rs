@@ -236,11 +236,6 @@ fn init_file(config: &Config, file: &Path) -> Result<ArcMutexGuard, TracingConfi
 pub fn init(config: &Config) -> &'static ArcMutexGuard {
   static VAL: OnceLock<ArcMutexGuard> = OnceLock::new();
   VAL.get_or_init(|| {
-    println!("inv_name: {:?}", crate::process::inv_name());
-    println!("inv_path: {:?}", crate::process::inv_path());
-    println!("name    : {:?}", crate::process::name());
-    println!("path    : {:?}", crate::process::path());
-  
     assert!(config.exec_type != ExecType::Binary);
     match try_init_impl(config) {
       Ok(guard) => guard,

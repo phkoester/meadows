@@ -16,7 +16,6 @@ use tracing::instrument;
 #[instrument(ret)]
 fn run() -> anyhow::Result<()> {
   println!("This is meadows-log");
-  
   info!("A log message");
   println!("Done.");
   Ok(())
