@@ -15,13 +15,13 @@ use std::time::Duration;
 fn main() {
   let mut n = 5_u64;
 
-  if let Some(arg) = env::args().skip(1).next() {
+  if let Some(arg) = env::args().nth(1) {
     n = arg.parse().expect("Invalid number");
   }
 
   if n > 0 {
     println!("Sleeping {n} seconds ...");
-    thread::sleep(Duration::from_secs(n))
+    thread::sleep(Duration::from_secs(n));
   }
 }
 

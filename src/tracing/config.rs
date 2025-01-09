@@ -223,6 +223,7 @@ Path             : {path:?}
 /// # Examples
 ///
 /// ```
+/// use meadows::config::ConfigError;
 /// use meadows::process_error;
 /// use meadows::process;
 /// use meadows::process::ExecType;
@@ -230,15 +231,8 @@ Path             : {path:?}
 ///
 /// fn main() {
 ///   // Call `try_init` in `main`, as early as possible, hold the result
-///   let init_result = config::try_init(&config::Config::new(ExecType::Binary));
-///   if let Err(err) = init_result {
-///     let mut print_err = true;
-///     if let Some(err) = err.downcast_ref::<ConfigError>() {
-///       if let ConfigError::FileNotFound = err {
-///         print_err = false;
-///       }
-///     }
-///     if print_err {
+///   if let Err(err) = config::try_init(&config::Config::new(ExecType::Binary)) {
+///     if !matches!(err.downcast_ref::<ConfigError>(), Some(ConfigError::FileNotFound)) {
 ///       process_error!("{:#}", err.context("Cannot initialize logging"));
 ///     }
 ///   }

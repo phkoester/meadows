@@ -14,8 +14,7 @@ coverage:
 	  RUSTDOCFLAGS="-C instrument-coverage -Z unstable-options --persist-doctests $(BIN_DIR)" \
 	  RUSTFLAGS="-C instrument-coverage" \
     	  cargo +nightly test
-	@grcov --binary-path $(BIN_DIR) -s . -t html --branch --ignore-not-existing \
-	  -o $(COVERAGE_DIR)/html .
+	@grcov --binary-path $(BIN_DIR) -s . -t html --branch --ignore-not-existing -o $(COVERAGE_DIR)/html .
 	@# Remove `.profraw` files
 	@rm -v $$(find -name "cargo-test-*.profraw")
 	@# Remove doc-test executables
