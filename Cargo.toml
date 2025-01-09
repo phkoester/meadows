@@ -47,8 +47,6 @@ tracing-log = "0.2"
 
 [features]
 
-default = ["std"]
-std = []
 tracing_config = ["dep:tracing-config"]
 
 [lints.clippy]

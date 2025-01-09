@@ -1,11 +1,11 @@
 # Meadows
 
-[![Build Status][status-img]][status]
+[![build status](https://github.com/phkoester/meadows/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/phkoester/meadows/actions)
+[![crates.io](https://img.shields.io/crates/v/meadows.svg)](https://crates.io/crates/meadows)
+[![docs](https://docs.rs/meadows/badge.svg)](https://docs.rs/meadows)
+[![rustc](https://img.shields.io/badge/rust-1.78%2B-orange.svg)](https://img.shields.io/badge/rust-1.78%2B-orange.svg)
 
-[status-img]: https://github.com/phkoester/meadows/actions/workflows/ci.yml/badge.svg?branch=main
-[status]: https://github.com/phkoester/meadows/actions/workflows/ci.yml
-
-`meadows` is an experimental library written in Rust.
+Meadows is an experimental library written in Rust.
 
 **NOTE:** For the time being, it is not recommended for public use. Use it at your own risk.
 

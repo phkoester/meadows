@@ -1,10 +1,13 @@
 // lib.rs
 
-// #![doc(html_playground_url = "https://play.rust-lang.org")]
-
 //! # Meadows
 //!
-//! Meadows is an experimental collection of general-purpose utilities.
+//! Meadows is an experimental library written in Rust.
+//! 
+//! ## Crate Features
+//! 
+//! - `tracing_config` - When enabled, the [`meadows::tracing::config`] module is available. This is
+//!   **disabled by default.**
 
 // Constants ------------------------------------------------------------------------------------------------
 
