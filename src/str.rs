@@ -32,15 +32,15 @@ pub trait StrExt {
   #[must_use]
   fn capitalize(&self) -> String;
 
-  /// Creates a new [`String`] by putting this string, which may be a multi-line string, into a fence
-  /// which is made up of `c` and `text_width` - 1 characters wide.
+  /// Creates a new [`String`] by putting this string, which may be a multi-line string, into a fence that is
+  /// made up of `c` and `text_width` - 1 characters wide.
   ///
   /// # Examples
   ///
   /// ```
   /// use meadows::prelude::*;
   ///
-  /// assert_eq!("1st line\n2nd line".fence('*', 10), "*********\n*\n* 1st line\n* 2nd line\n*\n*********");
+  /// assert_eq!("1st line\n2nd line".fence('*', 8), "*******\n*\n* 1st line\n* 2nd line\n*\n*******");
   /// ```
   #[must_use]
   fn fence(&self, c: char, text_width: usize) -> String;

@@ -26,7 +26,7 @@ fn run() -> anyhow::Result<()> {
 fn main() {
   // Init logging
 
-  config::init(&Config::builder(ExecType::Example).build());
+  config::init(&Config::new(ExecType::Example));
 
   // Run
 

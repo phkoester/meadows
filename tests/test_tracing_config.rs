@@ -10,7 +10,7 @@ use meadows::tracing::config;
 use meadows::tracing::config::Config;
 use tracing::info;
 
-fn set_up() { config::init(&Config::builder(ExecType::IntegTest).build()); }
+fn set_up() { config::init(&Config::new(ExecType::IntegTest)); }
 
 #[test]
 fn test_tracing_config_init_1() {

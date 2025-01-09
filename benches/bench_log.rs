@@ -16,7 +16,7 @@ fn set_up() {
   static ONCE: Once = Once::new();
   ONCE.call_once(|| {
     // Initialize `tracing`
-    config::init(&Config::builder(ExecType::BenchTest).log_start(false).build());
+    config::init(&Config { log_start: false, ..Config::new(ExecType::BenchTest) });
     // Initialize `log`
     tracing_log::LogTracer::init().unwrap()
   });

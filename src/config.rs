@@ -25,12 +25,9 @@ macro_rules! mod_debug {
 
 // `ConfigError` --------------------------------------------------------------------------------------------
 
-/// Error type for [`find_config_file`].
-#[derive(Debug, PartialEq, ThisError)]
+/// Error type for the `find` functions.
+#[derive(Debug, Eq, PartialEq, ThisError)]
 pub enum ConfigError {
-  /// Cargo-manifest directory not found.
-  #[error("Cargo-manifest directory not found")]
-  CargoManifestDirNotFound,
   /// File not found.
   #[error("File not found")]
   FileNotFound,
@@ -39,17 +36,182 @@ pub enum ConfigError {
   InvalidFileNamePattern(String),
 }
 
-// `FileNameType` -------------------------------------------------------------------------------------------
+// `ConfigLevel` --------------------------------------------------------------------------------------------
 
-#[derive(Debug)]
-enum FileNameType {
-  InvName,
-  Name,
-  TestName,
-  Blank,
+/// Configuration levels, from lowest (most general) to highest (most specific) priority.
+///
+/// In the following, `{name}` denotes the `name` value passed to a `find` function.
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+pub enum ConfigLevel {
+  /// Executable-level configuration.
+  ///
+  /// Configuration files at program level reside next to the binary. These are less common on Unix systems,
+  /// but on Windows, configuration files are often placed there.
+  Binary,
+  /// System-level configuration.
+  ///
+  /// Configuration files at system level reside in a system-dependent directory. On Unix systems, this is
+  /// `/etc/{name}`. On Windows, this is `%PROGRAMDATA%\{name}`, e.g. `C:\ProgramData\{name}`.
+  System,
+  /// User-level configuration.
+  ///
+  /// Configuration files at user level reside in system-dependent directories as returned by
+  /// [`dirs::home_dir`] and [`dirs::config_dir`].
+  User,
+  /// Local-level configuration.
+  ///
+  /// Configuration files at local level reside in a system-dependent directory as returned by
+  /// [`dirs::config_local_dir`].
+  Local,
+  /// Cargo-level configuration.
+  ///
+  /// Configuration files at Cargo level reside relative to the crate's manifest directory. For those to be
+  /// found, the executable must be run via Cargo.
+  Cargo,
+  /// Instance-level configuration.
+  ///
+  /// Configuration files at instance level reside in `{dir}` or `{dir}/.{name}`, where `{dir}` is the
+  /// current working directory or any of its parent directories.
+  Instance,
+  /// Path-level configuration.
+  ///
+  /// Configuration files at path level reside at an explicitly specified path or in an explicitly specified
+  /// directory.  
+  Path,
 }
 
 // Functions ------------------------------------------------------------------------------------------------
+
+/// XXX
+pub fn find_config_file(
+  exec_type: ExecType,
+  file_name_pattern: &str,
+  is_debug: bool,
+  name: &OsStr,
+  paths: Option<&OsStr>,
+  set_env_vars: bool,
+) -> Result<(ConfigLevel, PathBuf), ConfigError> {
+  let files =
+    find_config_files_impl(true, exec_type, file_name_pattern, is_debug, name, paths, set_env_vars)?;
+  Ok(files.into_iter().next().unwrap())
+}
+
+/// XXX
+pub fn find_config_files(
+  exec_type: ExecType,
+  file_name_pattern: &str,
+  is_debug: bool,
+  name: &OsStr,
+  paths: Option<&OsStr>,
+  set_env_vars: bool,
+) -> Result<impl IntoIterator<Item = (ConfigLevel, PathBuf)>, ConfigError> {
+  find_config_files_impl(false, exec_type, file_name_pattern, is_debug, name, paths, set_env_vars)
+}
+
+fn find_config_files_impl(
+  find_one: bool,
+  exec_type: ExecType,
+  file_name_pattern: &str,
+  is_debug: bool,
+  name: &OsStr,
+  paths: Option<&OsStr>,
+  set_env_vars: bool,
+) -> Result<impl IntoIterator<Item = (ConfigLevel, PathBuf)>, ConfigError> {
+  use ConfigLevel::*;
+
+  // Some introductory debug info
+
+  mod_debug!(is_debug, "Checking paths for {} executable", match exec_type {
+    ExecType::Binary => "binary",
+    ExecType::Example => "example",
+    ExecType::DocTest => "doc-test",
+    ExecType::UnitTest => "unit-test",
+    ExecType::IntegTest => "integration-test",
+    ExecType::BenchTest => "benchmark-test",
+  });
+
+  mod_debug!(is_debug, "Current directory: {}", {
+    match env::current_dir() {
+      Ok(dir) => format!("{dir:?}"),
+      Err(_) => String::from("-"),
+    }
+  });
+
+  // If requested, set env vars. This is executed only once
+
+  if set_env_vars {
+    self::set_env_vars(exec_type, is_debug);
+  }
+
+  // Collect files to probe
+
+  let name = name.to_string_lossy();
+
+  // `config.toml`
+  let bare_file_name = replace_in_pattern(file_name_pattern, "")?;
+  // `name.config.toml`
+  let file_name = replace_in_pattern(file_name_pattern, &name)?;
+  // `.name/config.toml`
+  let relative_file = PathBuf::from(format!(".{name}")).join(bare_file_name);
+
+  // let mut files = Uvec::with_key(&|val: &(ConfigLevel, PathBuf) | dunce::canonicalize(&val.1).ok());
+  let mut files = Vec::new();
+
+  let mut add_file = |level: ConfigLevel, file: PathBuf| {
+    let level_str = format!("{level:?}");
+    mod_debug!(is_debug, "{level_str:<8} | Adding file {file:?}");
+    files.push((level, file.clone()));
+  };
+
+  // Level `Path`
+
+  if let Some(paths) = paths {
+    for path in env::split_paths(paths) {
+      if path.is_file() {
+        add_file(Path, path);
+      } else {
+        add_file(Path, path.join(&file_name));
+        add_file(Path, path.join(&relative_file));
+      }
+    }
+  }
+
+  // Level `Instance`
+
+  if exec_type == ExecType::Binary {
+    let mut dir = env::current_dir().ok();
+    while let Some(val) = dir {
+      add_file(Instance, val.join(&file_name));
+      add_file(Instance, val.join(&relative_file));
+      dir = val.parent().map(PathBuf::from);
+    }
+  }
+
+  // Level `Cargo`
+
+  let manifest_dir = env::var_os("CARGO_MANIFEST_DIR").map(PathBuf::from);
+  if let Some(dir) = manifest_dir {
+    match exec_type {
+      ExecType::Binary => {
+        add_file(Cargo, dir.join("src").join(&file_name));
+        add_file(Cargo, dir.join("src/bin").join(&file_name));
+      }
+      ExecType::Example => todo!(),
+      ExecType::DocTest => todo!(),
+      ExecType::UnitTest => todo!(),
+      ExecType::IntegTest => todo!(),
+      ExecType::BenchTest => todo!(),
+    }
+    // Binary: ${manifest_dir}/src/${file_name}, ${manifest_dir}/src/bin/${file_name}
+    // Example: ${manifest_dir}/examples/${file_name}, ${manifest_dir}/examples/${blank_file_name}
+    // DocTest: ${manifest_dir}/src/${test_file_name}, ${manifest_dir}/src/${blank_file_name}
+    // UnitTest: ${manifest_dir}/src/${test_file_name}, ${manifest_dir}/src/${blank_file_name}
+    // IntegTest: ${manifest_dir}/tests/${test_file_name}, ${manifest_dir}/tests/${blank_file_name}
+    // BenchTest: ${manifest_dir}/benches/${test_file_name}, ${manifest_dir}/benches/${blank_file_name}
+  }
+
+  Ok(files)
+}
 
 /// A general function that helps to find a particular configuration file for a particular executable.
 ///
@@ -196,12 +358,7 @@ enum FileNameType {
 /// # Safety
 ///
 /// If `set_env_vars` is `true`, some environment variables are defined using [`env::set_var`], which is not
-/// thread-safe. For detailed information, read the "Safety" section of [`env::set_var`].
-///
-/// Rust executables tend to be multi-threaded. Rust tests are even multi-threaded by default. For
-/// multi-threaded executables, using the environment is completely discouraged. However, to some reasonable
-/// extent, it should be safe to write to and read from the environment in one thread only. For instance,
-/// [`OnceLock`] may help to implement such single-threaded initialization.
+/// thread-safe. For detailed information, read the "Safety" section for [`env::set_var`].
 ///
 /// # Errors
 ///
@@ -232,148 +389,141 @@ enum FileNameType {
 ///   true,                                          // `set_env_vars`
 /// );
 /// ```
-pub fn find_config_file(
-  exec_type: ExecType,
-  file_name_pattern: &str,
-  is_debug: bool,
-  paths: Option<&OsStr>,
-  set_env_vars: bool,
-) -> Result<PathBuf, ConfigError> {
-  use FileNameType::*;
 
-  // Some introductory debug info
-
-  mod_debug!(is_debug, "Checking paths for {} executable", match exec_type {
-    ExecType::Binary => "binary",
-    ExecType::Example => "example",
-    ExecType::DocTest => "doc-test",
-    ExecType::UnitTest => "unit-test",
-    ExecType::IntegTest => "integration-test",
-    ExecType::BenchTest => "benchmark-test",
-  });
-
-  mod_debug!(is_debug, "Current directory: {}", {
-    match env::current_dir() {
-      Ok(dir) => format!("{dir:?}"),
-      Err(_) => String::from("-"),
-    }
-  });
-
-  // If requested, set env vars. This is executed only once
-
-  if set_env_vars {
-    self::set_env_vars(exec_type, is_debug);
-  }
-
-  // Look for a matching file in `paths` and return early
-
-  if let Some(paths) = paths {
-    for path in env::split_paths(paths) {
-      if path.is_file() {
-        mod_debug!(is_debug, "Checking path {path:?}");
-        mod_debug!(is_debug, "Found configuration file {path:?}");
-        return Ok(path);
-      }
-    }
-  }
-
-  // Collect tasks
-
-  let mut tasks: Vec<(PathBuf, Vec<FileNameType>)> = vec![];
-
-  // Add tasks for `paths`
-
-  if let Some(paths) = paths {
-    for path in env::split_paths(paths) {
-      match exec_type {
-        ExecType::Binary => tasks.push((path, vec![InvName, Name])),
-        ExecType::Example => tasks.push((path, vec![Name])),
-        _ => tasks.push((path, vec![TestName])),
-      }
-    }
-  }
-
-  // Add type-specific tasks
-
-  let manifest_dir = env::var_os("CARGO_MANIFEST_DIR").map(PathBuf::from);
-  if exec_type != ExecType::Binary && manifest_dir.is_none() {
-    return Err(ConfigError::CargoManifestDirNotFound);
-  }
-
-  match exec_type {
-    ExecType::Binary => {
-      tasks.push((crate::process::inv_dir().clone(), vec![InvName]));
-      tasks.push((crate::process::dir().clone(), vec![Name]));
-
-      if let Some(ref manifest_dir) = manifest_dir {
-        tasks.push((manifest_dir.clone().join("src"), vec![Name]));
-        tasks.push((manifest_dir.clone().join("src").join("bin"), vec![Name]));
-      }
-
-      let mut config_dirs = Uvec::new();
-      if let Some(dir) = dirs::config_local_dir() {
-        config_dirs.push(dir);
-      }
-      if let Some(dir) = dirs::config_dir() {
-        config_dirs.push(dir);
-      }
-
-      for config_dir in config_dirs {
-        tasks.push((config_dir.clone().join(crate::process::inv_name()), vec![InvName, Blank]));
-        tasks.push((config_dir.clone().join(crate::process::name()), vec![Name, Blank]));
-      }
-    }
-    ExecType::Example =>
-      if let Some(ref manifest_dir) = manifest_dir {
-        tasks.push((manifest_dir.clone().join("examples"), vec![Name, Blank]));
-      },
-    ExecType::DocTest | ExecType::UnitTest =>
-      if let Some(ref manifest_dir) = manifest_dir {
-        tasks.push((manifest_dir.clone().join("src"), vec![TestName, Blank]));
-      },
-    ExecType::IntegTest =>
-      if let Some(ref manifest_dir) = manifest_dir {
-        tasks.push((manifest_dir.clone().join("tests"), vec![TestName, Blank]));
-      },
-    ExecType::BenchTest =>
-      if let Some(ref manifest_dir) = manifest_dir {
-        tasks.push((manifest_dir.clone().join("benches"), vec![TestName, Blank]));
-      },
-  }
-
-  // Collect files from tasks, provide complete debug output
-
-  let inv_name = crate::process::inv_name().to_string_lossy();
-  let name = crate::process::name().to_string_lossy();
-  let test_name = crate::process::test_name().to_string_lossy();
-
-  let mut files = Uvec::new();
-  for task in &tasks {
-    for file_name_type in &task.1 {
-      let file_name = match file_name_type {
-        InvName => replace_in_pattern(file_name_pattern, &inv_name)?,
-        Name => replace_in_pattern(file_name_pattern, &name)?,
-        TestName => replace_in_pattern(file_name_pattern, &test_name)?,
-        Blank => replace_in_pattern(file_name_pattern, "")?,
-      };
-      let file = task.0.clone().join(file_name);
-      if files.push(file.clone()) {
-        mod_debug!(is_debug, "Checking path {:?}", file);
-      }
-    }
-  }
-
-  // Eventually, look for file
-
-  for file in files {
-    if file.is_file() {
-      mod_debug!(is_debug, "Found configuration file {:?}", file);
-      return Ok(file.clone());
-    }
-  }
-  Err(ConfigError::FileNotFound)
-}
-
+// Some introductory debug info
+//
+// mod_debug!(is_debug, "Checking paths for {} executable", match exec_type {
+// ExecType::Binary => "binary",
+// ExecType::Example => "example",
+// ExecType::DocTest => "doc-test",
+// ExecType::UnitTest => "unit-test",
+// ExecType::IntegTest => "integration-test",
+// ExecType::BenchTest => "benchmark-test",
+// });
+//
+// mod_debug!(is_debug, "Current directory: {}", {
+// match env::current_dir() {
+// Ok(dir) => format!("{dir:?}"),
+// Err(_) => String::from("-"),
+// }
+// });
+//
+// If requested, set env vars. This is executed only once
+//
+// if set_env_vars {
+// self::set_env_vars(exec_type, is_debug);
+// }
+//
+// Look for a matching file in `paths` and return early
+//
+// if let Some(paths) = paths {
+// for path in env::split_paths(paths) {
+// if path.is_file() {
+// mod_debug!(is_debug, "Checking path {path:?}");
+// mod_debug!(is_debug, "Found configuration file {path:?}");
+// return Ok(path);
+// }
+// }
+// }
+//
+// Collect tasks
+//
+// let mut tasks: Vec<(PathBuf, Vec<FileNameType>)> = vec![];
+//
+// Add tasks for `paths`
+//
+// if let Some(paths) = paths {
+// for path in env::split_paths(paths) {
+// match exec_type {
+// ExecType::Binary => tasks.push((path, vec![InvName, Name])),
+// ExecType::Example => tasks.push((path, vec![Name])),
+// _ => tasks.push((path, vec![TestName])),
+// }
+// }
+// }
+//
+// Add type-specific tasks
+//
+// let manifest_dir = env::var_os("CARGO_MANIFEST_DIR").map(PathBuf::from);
+// if exec_type != ExecType::Binary && manifest_dir.is_none() {
+// return Err(ConfigError::CargoManifestDirNotFound);
+// }
+//
+// match exec_type {
+// ExecType::Binary => {
+// tasks.push((crate::process::inv_dir().clone(), vec![InvName]));
+// tasks.push((crate::process::dir().clone(), vec![Name]));
+//
+// if let Some(ref manifest_dir) = manifest_dir {
+// tasks.push((manifest_dir.clone().join("src"), vec![Name]));
+// tasks.push((manifest_dir.clone().join("src").join("bin"), vec![Name]));
+// }
+//
+// let mut config_dirs = Uvec::new();
+// if let Some(dir) = dirs::config_local_dir() {
+// config_dirs.push(dir);
+// }
+// if let Some(dir) = dirs::config_dir() {
+// config_dirs.push(dir);
+// }
+//
+// for config_dir in config_dirs {
+// tasks.push((config_dir.clone().join(crate::process::inv_name()), vec![InvName, Blank]));
+// tasks.push((config_dir.clone().join(crate::process::name()), vec![Name, Blank]));
+// }
+// }
+// ExecType::Example =>
+// if let Some(ref manifest_dir) = manifest_dir {
+// tasks.push((manifest_dir.clone().join("examples"), vec![Name, Blank]));
+// },
+// ExecType::DocTest | ExecType::UnitTest =>
+// if let Some(ref manifest_dir) = manifest_dir {
+// tasks.push((manifest_dir.clone().join("src"), vec![TestName, Blank]));
+// },
+// ExecType::IntegTest =>
+// if let Some(ref manifest_dir) = manifest_dir {
+// tasks.push((manifest_dir.clone().join("tests"), vec![TestName, Blank]));
+// },
+// ExecType::BenchTest =>
+// if let Some(ref manifest_dir) = manifest_dir {
+// tasks.push((manifest_dir.clone().join("benches"), vec![TestName, Blank]));
+// },
+// }
+//
+// Collect files from tasks, provide complete debug output
+//
+// let inv_name = crate::process::inv_name().to_string_lossy();
+// let name = crate::process::name().to_string_lossy();
+// let test_name =
+// if exec_type.is_test() { Some(crate::process::test_name().to_string_lossy()) } else { None };
+//
+// let mut files = Uvec::new();
+// for task in &tasks {
+// for file_name_type in &task.1 {
+// let file_name = match file_name_type {
+// InvName => replace_in_pattern(file_name_pattern, &inv_name)?,
+// Name => replace_in_pattern(file_name_pattern, &name)?,
+// TestName => replace_in_pattern(file_name_pattern, test_name.as_ref().unwrap())?,
+// Blank => replace_in_pattern(file_name_pattern, "")?,
+// };
+// let file = task.0.clone().join(file_name);
+// if files.push(file.clone()) {
+// mod_debug!(is_debug, "Checking path {:?}", file);
+// }
+// }
+// }
+//
+// Eventually, look for file
+//
+// for file in files {
+// if file.is_file() {
+// mod_debug!(is_debug, "Found configuration file {:?}", file);
+// return Ok(file.clone());
+// }
+// }
+// Err(ConfigError::FileNotFound)
+// }
+//
 fn replace_in_pattern(pattern: &str, to: &str) -> Result<String, ConfigError> {
   let from = "{}";
   if let Some(index) = pattern.find(from) {
@@ -381,7 +531,7 @@ fn replace_in_pattern(pattern: &str, to: &str) -> Result<String, ConfigError> {
     let ldot_str = if ldot && !to.is_empty() { "." } else { "" };
     let rdot = index < pattern.len() - from.len();
     let rdot_str = if rdot && !to.is_empty() { "." } else { "" };
-
+    //
     let to = format!("{ldot_str}{to}{rdot_str}");
     Ok(pattern.replacen(from, &to, 1))
   } else {

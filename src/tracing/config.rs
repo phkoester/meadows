@@ -7,13 +7,6 @@
 //!
 //! For binary executables, use the [`try_init`] function. For example and test executables, use the [`init`]
 //! function.
-//!
-//! Unless the values are explicitly set in [`Config`], the following environment variables are used:
-//!
-//! | Name                   | Description
-//! | :--------------------- | :----------
-//! | `tracing_config`       | One or more paths, separated by the system-dependent path separator. Each path may point to a file or a directory
-//! | `tracing_config_debug` | If set to `true`, the debug mode is enabled
 
 use std::env;
 use std::ffi::OsString;
@@ -33,128 +26,62 @@ use crate::process_note;
 
 // `Config` -------------------------------------------------------------------------------------------------
 
-/// This struct holds the initialization configuration.
-///
-/// You create a [`Config`] using the [`Config::builder`] function and then pass it to either [`try_init`] or
-/// [`init`].
+/// This structs holds the configuration used to initialize `tracing`.
 #[derive(Debug)]
 pub struct Config {
-  exec_type: ExecType,
-  is_debug: bool,
-  log_start: bool,
-  paths: Option<OsString>,
-  print_path: bool,
-  text_width: usize,
+  /// The executable type.
+  pub exec_type: ExecType,
+  /// If `true`, debug mode is enabled.
+  pub is_debug: bool,
+  /// If `true`, a process-start message is logged.
+  pub log_start: bool,
+  /// The name to search `{}tracing.toml` with.
+  pub name: OsString,
+  /// One or more paths, separated by the system-dependent path separator. Each path may point to a file or
+  /// directory.
+  pub paths: Option<OsString>,
+  /// If `true`, the path of the loaded log-configuration file is printed to `stdout`.
+  pub print_path: bool,
+  /// This hint is used to format the process-start message.
+  pub text_width: usize,
 }
 
 impl Config {
-  /// Returns a builder that creates a [`Config`].
-  #[must_use]
-  pub fn builder(exec_type: ExecType) -> ConfigBuilder { ConfigBuilder::new(exec_type) }
-}
-
-// `ConfigBuilder` ------------------------------------------------------------------------------------------
-
-/// A builder for [`Config`].
-#[derive(Debug)]
-pub struct ConfigBuilder {
-  exec_type: ExecType,
-  is_debug: Option<bool>,
-  log_start: bool,
-  paths: Option<OsString>,
-  print_path: bool,
-  text_width: usize,
-}
-
-impl ConfigBuilder {
-  /// Creates a [`Config`], based on the current settings.
+  /// Returns a new `Config` with default settings suitable for the `exec_type`.
   ///
-  /// If [`debug`](ConfigBuilder::debug) was not called with a specific value, an attempt is made to read the
-  /// `tracing_config_debug` environment variable. If it is set to `"true"`, debug mode is enabled.
+  /// | Field        | Default Value
+  /// | :----------- | :------------
+  /// | `is_debug`   | `true` if environment variable `tracing_config_debug` is set to to `"true"`, `otherwise `false`
+  /// | `log_start`  | `true`
+  /// | `name`       | Depends on `exec_type`
+  /// | `paths`      | The value of the environment variable `tracing_config`, otherwise [`None`]
+  /// | `print_path` | `true`
+  /// | `text_width` | [`crate::TEXT_WIDTH`]
   ///
-  /// If [`paths`](ConfigBuilder::paths) was not called with a specific value, an attempt is made to read the
-  /// `tracing_config` environment variable. This may contain one or more paths, separated by the
-  /// system-dependent path separator, where each path may point to a file or a directory.
+  /// # Safety
+  ///
+  /// The function reads the environment, which is not thread-safe. For detailed information, read the
+  /// "Safety" section for [`env::set_var`].
   #[must_use]
-  pub fn build(self) -> Config {
-    let is_debug = self.is_debug.or_else(get_env_debug).unwrap_or(false);
-    let paths = self.paths.or_else(get_env);
+  pub fn new(exec_type: ExecType) -> Config {
+    use ExecType::*;
+
+    let is_debug = get_env_debug().unwrap_or(false);
+    let name = match exec_type {
+      Binary => crate::process::inv_name(),
+      Example => crate::process::name(),
+      DocTest | UnitTest | IntegTest | BenchTest => crate::process::test_name(),
+    };
+    let paths = get_env();
     Config {
-      exec_type: self.exec_type,
-      is_debug,
-      log_start: self.log_start,
-      paths,
-      print_path: self.print_path,
-      text_width: self.text_width,
-    }
-  }
-
-  /// Sets the `debug` value.
-  ///
-  /// If `true`, debug mode is enabled. The default value is that of the environment variable
-  /// `tracing_config_debug`, `false` otherwise.
-  #[must_use]
-  pub fn debug(mut self, val: bool) -> Self {
-    self.is_debug = Some(val);
-    self
-  }
-
-  /// Sets the `log_start` value.
-  ///
-  /// If `true`, a message is logged when the process starts. The default value is `false`.
-  #[must_use]
-  pub fn log_start(mut self, val: bool) -> Self {
-    self.log_start = val;
-    self
-  }
-
-  /// Creates a [`ConfigBuilder`] with the given `exec_type`.
-  #[must_use]
-  fn new(exec_type: ExecType) -> Self {
-    Self {
       exec_type,
-      is_debug: None,
+      is_debug,
       log_start: true,
-      paths: None,
+      name: name.clone(),
+      paths,
       print_path: true,
       text_width: crate::TEXT_WIDTH,
     }
-  }
-
-  /// Sets the `paths` value.
-  ///
-  /// This may contain one or more paths, separated by the system-dependent path separator, where each path
-  /// may point to a file or a directory. The default value is that of the environment variable
-  /// `tracing_config`, [`None`] otherwise.
-  #[must_use]
-  pub fn paths(mut self, val: OsString) -> Self {
-    self.paths = Some(val);
-    self
-  }
-
-  /// Sets the `print_path` value.
-  ///
-  /// If `true`, the path and the title of the loaded configuration file are printed to `stdout`. The default
-  /// value is `true`.
-  #[must_use]
-  pub fn print_path(mut self, val: bool) -> Self {
-    self.print_path = val;
-    self
-  }
-
-  /// Sets the `text_width` value.
-  ///
-  /// This is used to format the start message if `log_start` is `true`. The default value is
-  /// [`crate::TEXT_WIDTH`].
-  ///
-  /// # Panics
-  ///
-  /// Panics if `val` is `0`.
-  #[must_use]
-  pub fn text_width(mut self, val: usize) -> Self {
-    assert!(val != 0);
-    self.text_width = val;
-    self
   }
 }
 
@@ -171,11 +98,7 @@ fn init_file(config: &Config, file: &Path) -> Result<ArcMutexGuard, TracingConfi
     tracing_config::config::read_config(file, tracing_config::config::RESOLVE_FROM_ENV_DEPTH)?;
 
   if config.print_path {
-    process_note!(
-            "Loaded configuration file `{}` titled \"{}\"",
-            file.display(),
-            tracing_config.title
-        );
+    process_note!("Loaded configuration file `{}` titled `{}`", file.display(), tracing_config.title);
   }
 
   // Apply configuration
@@ -200,14 +123,15 @@ fn init_file(config: &Config, file: &Path) -> Result<ArcMutexGuard, TracingConfi
 ///
 /// # Examples
 ///
-/// ```no_run
+/// ```
 /// use meadows::process;
+/// use meadows::process::ExecType;
 /// use meadows::process_error;
 /// use meadows::tracing::config;
 ///
 /// // This function can be called from every test. `init` may be called multiple times, but internally, it
 /// // configures `tracing` exactly once per process
-/// fn set_up() { config::init(&config::Config::builder(process::ExecType::UnitTest).build()); }
+/// fn set_up() { config::init(&config::Config::new(ExecType::UnitTest)); }
 ///
 /// #[test]
 /// fn test_1() {
@@ -220,17 +144,6 @@ fn init_file(config: &Config, file: &Path) -> Result<ArcMutexGuard, TracingConfi
 ///   set_up();
 ///   // ...
 /// }
-/// ```
-/// 
-/// XXX Another example:
-/// 
-/// ```
-/// use meadows::process;
-/// use meadows::tracing::config;
-/// 
-/// config::init(&config::Config::builder(process::ExecType::DocTest).build());
-/// assert_eq!(process::inv_path().to_string_lossy(), "dong");
-/// tracing::info!("Hi freaks!");
 /// ```
 #[allow(clippy::test_attr_in_doctest)]
 pub fn init(config: &Config) -> &'static ArcMutexGuard {
@@ -312,14 +225,22 @@ Path             : {path:?}
 /// ```
 /// use meadows::process_error;
 /// use meadows::process;
+/// use meadows::process::ExecType;
 /// use meadows::tracing::config;
 ///
 /// fn main() {
 ///   // Call `try_init` in `main`, as early as possible, hold the result
-///   let init_result = config::try_init(&config::Config::builder(process::ExecType::Binary).build());
+///   let init_result = config::try_init(&config::Config::new(ExecType::Binary));
 ///   if let Err(err) = init_result {
-///     // Print the error, but continue running
-///     process_error!("{:#}", err.context("Cannot initialize logging"));
+///     let mut print_err = true;
+///     if let Some(err) = err.downcast_ref::<ConfigError>() {
+///       if let ConfigError::FileNotFound = err {
+///         print_err = false;
+///       }
+///     }
+///     if print_err {
+///       process_error!("{:#}", err.context("Cannot initialize logging"));
+///     }
 ///   }
 ///
 ///   // ...
@@ -337,15 +258,16 @@ fn try_init_impl(config: &Config) -> anyhow::Result<ArcMutexGuard> {
     config.exec_type,
     "{}tracing.toml", // `file_name_pattern`
     config.is_debug,
+    &config.name,
     config.paths.as_deref(),
     true, // `set_env_vars`
   )?;
 
   // Load configuration file
 
-  let guard = init_file(config, &config_file)?;
+  let guard = init_file(config, &config_file.1)?;
   if config.log_start {
-    info!("\n{}", start_message(config, &config_file));
+    info!("\n{}", start_message(config, &config_file.1));
   }
   Ok(guard)
 }
@@ -361,7 +283,7 @@ mod tests {
 
   use super::*;
 
-  fn set_up() { init(&Config::builder(ExecType::UnitTest).build()); }
+  fn set_up() { init(&Config::new(ExecType::UnitTest)); }
 
   // Functions ----------------------------------------------------------------------------------------------
 
