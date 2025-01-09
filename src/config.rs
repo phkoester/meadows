@@ -4,6 +4,8 @@
 
 use std::env;
 use std::ffi::OsStr;
+use std::io;
+use std::io::Write;
 use std::path::PathBuf;
 use std::process;
 use std::sync::OnceLock;
@@ -15,12 +17,15 @@ use crate::process::ExecType;
 
 // Macros ---------------------------------------------------------------------------------------------------
 
+/// Returns [`io::Result<()>`].
 macro_rules! mod_debug {
-  ($is_debug:expr, $($arg:tt)+) => {
+  ($is_debug:expr, $($arg:tt)+) => {{
     if $is_debug {
-      println!("[meadows::config] {}", format_args!($($arg)+));
+      writeln!(io::stdout(), "[meadows::config] {}", format_args!($($arg)+))
+    } else {
+      Ok(())
     }
-  };
+  }};
 }
 
 // `ConfigError` --------------------------------------------------------------------------------------------
@@ -91,29 +96,27 @@ pub enum ConfigLevel {
 /// See [`find_config_files`].
 ///
 /// # Errors
-/// 
+///
 /// See [`find_config_files`].
-/// 
+///
 /// # Examples
 ///
 /// ```
 /// use std::env;
 ///
-/// # use anyhow::Result;
 /// use meadows::config;
-/// use meadows::process;
 /// use meadows::process::ExecType;
 ///
-/// # fn run() -> Result<()> {
+/// # fn run() -> anyhow::Result<()> {
 /// let config_file = config::find_config_file(
 ///   ExecType::Binary,                  // `exec_type`
 ///   "{}config.toml",                   // `file_name_pattern`
 ///   true,                              // `is_debug`,
-///   process::inv_name(),               // `name`
+///   meadows::env::inv_name(),          // `name`
 ///   env::var_os("MY_PATH").as_deref(), // `paths`
 ///   true,                              // `set_env_vars`
 /// )?;
-/// # Ok(())
+/// #   Ok(())
 /// # }
 /// #
 /// # run();
@@ -126,7 +129,7 @@ pub fn find_config_file(
   name: &OsStr,
   paths: Option<&OsStr>,
   set_env_vars: bool,
-) -> Result<(ConfigLevel, PathBuf), ConfigError> {
+) -> anyhow::Result<(ConfigLevel, PathBuf)> {
   let files =
     find_config_files_impl(true, exec_type, file_name_pattern, is_debug, name, paths, set_env_vars)?;
   // If no error occurred, there must be at least one file, so `unwrap` is safe
@@ -145,25 +148,25 @@ pub fn find_config_file(
 ///
 /// | Name   | Description
 /// | :----- | :-----------
-/// | `dir`  | The canonical directory of the executable, as returned by [`dir`](crate::process::dir)
+/// | `dir`  | The canonical directory of the executable, as returned by [`dir`](crate::env::dir)
 /// | `home` | The current user's home directory, as returned by [`dirs::home_dir`]
-/// | `name` | The canonical name of the executable, as returned by [`name`](crate::process::name)
-/// | `path` | The canonical path of the executable, as returned by [`path`](crate::process::path)
+/// | `name` | The canonical name of the executable, as returned by [`name`](crate::env::name)
+/// | `path` | The canonical path of the executable, as returned by [`path`](crate::env::path)
 /// | `pid`  | The process ID (PID) of the executable
 ///
 /// The following variables are set for binary executables only:
 ///
 /// | Name       | Description
 /// | :--------  | :----------
-/// | `inv_dir`  | The invocation directory of the executable, as returned by [`inv_dir`](crate::process::inv_dir)
-/// | `inv_name` | The invocation name of the executable, as returned by [`inv_name`](crate::process::inv_name)
-/// | `inv_path` | The invocation path of the executable, as returned by [`inv_path`](crate::process::inv_path)
+/// | `inv_dir`  | The invocation directory of the executable, as returned by [`inv_dir`](crate::env::inv_dir)
+/// | `inv_name` | The invocation name of the executable, as returned by [`inv_name`](crate::env::inv_name)
+/// | `inv_path` | The invocation path of the executable, as returned by [`inv_path`](crate::env::inv_path)
 ///
 /// The following variables are set for test executables only:
 ///
 /// | Name        | Description
 /// | :---------- | :----------
-/// | `test_name` | The canonical test name of the executable, as returned by [`test_name`](crate::process::test_name)
+/// | `test_name` | The canonical test name of the executable, as returned by [`test_name`](crate::env::test_name)
 ///
 /// # Safety
 ///
@@ -175,31 +178,32 @@ pub fn find_config_file(
 /// If `is_debug` is `true`, the function outputs additional debug information on `stdout` that helps to
 /// trace the file search.
 ///
-/// As an example, let `file_name_pattern` be `"{}config.toml"`. XXX
-/// 
+/// As an example, let `file_name_pattern` be `"{}config.toml"`, let `name` be `"out"`.
+///
+/// XXX
+///
 /// # Errors
 ///
 /// Returns
 ///
 /// - [`ConfigError::FileNotFound`] if a configuration file cannot be found;
-/// - [`ConfigError::InvalidFileNamePattern`] if `file_name_pattern` does not contain `"{}"`.
+/// - [`ConfigError::InvalidFileNamePattern`] if `file_name_pattern` does not contain `"{}"`;
+/// - [`io::Error`] if an I/O error occurs.
 ///
 /// # Examples
 ///
 /// ```
 /// use std::env;
 ///
-/// # use anyhow::Result;
 /// use meadows::config;
-/// use meadows::process;
 /// use meadows::process::ExecType;
 ///
-/// # fn run() -> Result<()> {
+/// # fn run() -> anyhow::Result<()> {
 /// let config_files = config::find_config_files(
 ///   ExecType::Binary,                  // `exec_type`
 ///   "{}config.toml",                   // `file_name_pattern`
 ///   true,                              // `is_debug`,
-///   process::inv_name(),               // `name`
+///   meadows::env::inv_name(),          // `name`
 ///   env::var_os("MY_PATH").as_deref(), // `paths`
 ///   true,                              // `set_env_vars`
 /// )?;
@@ -207,7 +211,7 @@ pub fn find_config_file(
 /// for config_file in config_files {
 ///   println!("{:?} | {:?}", config_file.0, config_file.1);
 /// }
-/// # Ok(())
+/// #   Ok(())
 /// # }
 /// #
 /// # run();
@@ -219,7 +223,7 @@ pub fn find_config_files(
   name: &OsStr,
   paths: Option<&OsStr>,
   set_env_vars: bool,
-) -> Result<impl IntoIterator<Item = (ConfigLevel, PathBuf)>, ConfigError> {
+) -> anyhow::Result<impl IntoIterator<Item = (ConfigLevel, PathBuf)>> {
   find_config_files_impl(false, exec_type, file_name_pattern, is_debug, name, paths, set_env_vars)
 }
 
@@ -231,7 +235,7 @@ fn find_config_files_impl(
   name: &OsStr,
   paths: Option<&OsStr>,
   set_env_vars: bool,
-) -> Result<impl IntoIterator<Item = (ConfigLevel, PathBuf)>, ConfigError> {
+) -> anyhow::Result<impl IntoIterator<Item = (ConfigLevel, PathBuf)>> {
   use ConfigLevel::*;
   use ExecType::*;
 
@@ -244,19 +248,21 @@ fn find_config_files_impl(
     UnitTest => "unit-test",
     IntegTest => "integration-test",
     BenchTest => "benchmark-test",
-  });
+  })?;
 
   mod_debug!(is_debug, "Current directory: {}", {
     match env::current_dir() {
       Ok(dir) => format!("{dir:?}"),
       Err(_) => String::from("-"),
     }
-  });
+  })?;
 
   // If requested, set env vars. This is executed only once
 
   if set_env_vars {
-    self::set_env_vars(exec_type, is_debug);
+    if let Err(err) = self::set_env_vars(exec_type, is_debug) {
+      return Err(err.into());
+    }
   }
 
   // Collect paths to probe, ordered from highest to lowest priority
@@ -275,31 +281,32 @@ fn find_config_files_impl(
   let mut file_paths = Vec::new();
 
   // Closure returns a `Some` if the outer function should return quickly
-  let mut add_file_path = |level: ConfigLevel, path: PathBuf| -> Option<(ConfigLevel, PathBuf)> {
-    file_paths.push((level, path.clone()));
-    if is_debug {
-      let level_str = format!("{level:?}");
-      mod_debug!(is_debug, "{level_str:<10} | Adding path {path:?}");
-      None
-    } else if find_one && path.is_file() {
-      Some((level, path.clone()))
-    } else {
-      None
-    }
-  };
+  let mut add_file_path =
+    |level: ConfigLevel, path: PathBuf| -> io::Result<Option<(ConfigLevel, PathBuf)>> {
+      file_paths.push((level, path.clone()));
+      if is_debug {
+        let level_str = format!("{level:?}");
+        mod_debug!(is_debug, "{level_str:<10} | Adding path {path:?}")?;
+        Ok(None)
+      } else if find_one && path.is_file() {
+        Ok(Some((level, path.clone())))
+      } else {
+        Ok(None)
+      }
+    };
 
   // Level `Path`
   if let Some(paths) = paths {
     for path in env::split_paths(paths) {
       if path.is_file() {
-        if let Some(val) = add_file_path(Path, path) {
+        if let Some(val) = add_file_path(Path, path)? {
           return Ok(vec![val].into_iter());
         }
       } else {
-        if let Some(val) = add_file_path(Path, path.join(&file_name)) {
+        if let Some(val) = add_file_path(Path, path.join(&file_name))? {
           return Ok(vec![val].into_iter());
         }
-        if let Some(val) = add_file_path(Path, path.join(&hidden_relative_file)) {
+        if let Some(val) = add_file_path(Path, path.join(&hidden_relative_file))? {
           return Ok(vec![val].into_iter());
         }
       }
@@ -310,10 +317,10 @@ fn find_config_files_impl(
   if exec_type == Binary {
     let mut dir = env::current_dir().ok();
     while let Some(val) = dir {
-      if let Some(val) = add_file_path(Instance, val.join(&file_name)) {
+      if let Some(val) = add_file_path(Instance, val.join(&file_name))? {
         return Ok(vec![val].into_iter());
       }
-      if let Some(val) = add_file_path(Instance, val.join(&hidden_relative_file)) {
+      if let Some(val) = add_file_path(Instance, val.join(&hidden_relative_file))? {
         return Ok(vec![val].into_iter());
       }
       dir = val.parent().map(PathBuf::from);
@@ -325,42 +332,42 @@ fn find_config_files_impl(
   if let Some(dir) = manifest_dir {
     match exec_type {
       Binary => {
-        if let Some(val) = add_file_path(Cargo, dir.join("src").join(&file_name)) {
+        if let Some(val) = add_file_path(Cargo, dir.join("src").join(&file_name))? {
           return Ok(vec![val].into_iter());
         }
-        if let Some(val) = add_file_path(Cargo, dir.join("src").join("bin").join(&file_name)) {
+        if let Some(val) = add_file_path(Cargo, dir.join("src").join("bin").join(&file_name))? {
           return Ok(vec![val].into_iter());
         }
       }
       Example => {
-        if let Some(val) = add_file_path(Cargo, dir.join("examples").join(&file_name)) {
+        if let Some(val) = add_file_path(Cargo, dir.join("examples").join(&file_name))? {
           return Ok(vec![val].into_iter());
         }
-        if let Some(val) = add_file_path(Cargo, dir.join("examples").join(&bare_file_name)) {
+        if let Some(val) = add_file_path(Cargo, dir.join("examples").join(&bare_file_name))? {
           return Ok(vec![val].into_iter());
         }
       }
       DocTest | UnitTest => {
-        if let Some(val) = add_file_path(Cargo, dir.join("src").join(&file_name)) {
+        if let Some(val) = add_file_path(Cargo, dir.join("src").join(&file_name))? {
           return Ok(vec![val].into_iter());
         }
-        if let Some(val) = add_file_path(Cargo, dir.join("src").join(&bare_file_name)) {
+        if let Some(val) = add_file_path(Cargo, dir.join("src").join(&bare_file_name))? {
           return Ok(vec![val].into_iter());
         }
       }
       IntegTest => {
-        if let Some(val) = add_file_path(Cargo, dir.join("tests").join(&file_name)) {
+        if let Some(val) = add_file_path(Cargo, dir.join("tests").join(&file_name))? {
           return Ok(vec![val].into_iter());
         }
-        if let Some(val) = add_file_path(Cargo, dir.join("tests").join(&bare_file_name)) {
+        if let Some(val) = add_file_path(Cargo, dir.join("tests").join(&bare_file_name))? {
           return Ok(vec![val].into_iter());
         }
       }
       BenchTest => {
-        if let Some(val) = add_file_path(Cargo, dir.join("benches").join(&file_name)) {
+        if let Some(val) = add_file_path(Cargo, dir.join("benches").join(&file_name))? {
           return Ok(vec![val].into_iter());
         }
-        if let Some(val) = add_file_path(Cargo, dir.join("benches").join(&bare_file_name)) {
+        if let Some(val) = add_file_path(Cargo, dir.join("benches").join(&bare_file_name))? {
           return Ok(vec![val].into_iter());
         }
       }
@@ -370,15 +377,15 @@ fn find_config_files_impl(
   // Level `Local`
   if exec_type == Binary {
     if let Some(dir) = dirs::home_dir() {
-      if let Some(val) = add_file_path(Local, dir.join(&file_name)) {
+      if let Some(val) = add_file_path(Local, dir.join(&file_name))? {
         return Ok(vec![val].into_iter());
       }
-      if let Some(val) = add_file_path(Local, dir.join(&hidden_relative_file)) {
+      if let Some(val) = add_file_path(Local, dir.join(&hidden_relative_file))? {
         return Ok(vec![val].into_iter());
       }
     }
     if let Some(dir) = dirs::config_local_dir() {
-      if let Some(val) = add_file_path(Local, dir.join(&relative_file)) {
+      if let Some(val) = add_file_path(Local, dir.join(&relative_file))? {
         return Ok(vec![val].into_iter());
       }
     }
@@ -387,7 +394,7 @@ fn find_config_files_impl(
   // Level `User`
   if exec_type == Binary {
     if let Some(dir) = dirs::config_dir() {
-      if let Some(val) = add_file_path(User, dir.join(&relative_file)) {
+      if let Some(val) = add_file_path(User, dir.join(&relative_file))? {
         return Ok(vec![val].into_iter());
       }
     }
@@ -396,10 +403,10 @@ fn find_config_files_impl(
   // Level `System`
   if exec_type == Binary {
     if let Some(dir) = crate::env::system_config_dir() {
-      if let Some(val) = add_file_path(System, dir.join(&file_name)) {
+      if let Some(val) = add_file_path(System, dir.join(&file_name))? {
         return Ok(vec![val].into_iter());
       }
-      if let Some(val) = add_file_path(System, dir.join(&relative_file)) {
+      if let Some(val) = add_file_path(System, dir.join(&relative_file))? {
         return Ok(vec![val].into_iter());
       }
     }
@@ -407,7 +414,7 @@ fn find_config_files_impl(
 
   // Level `Executable`
   if exec_type == Binary {
-    if let Some(val) = add_file_path(Executable, crate::process::inv_dir().join(&file_name)) {
+    if let Some(val) = add_file_path(Executable, crate::env::inv_dir().join(&file_name))? {
       return Ok(vec![val].into_iter());
     }
   }
@@ -418,7 +425,7 @@ fn find_config_files_impl(
   let mut files = Uvec::with_key(&|val: &(ConfigLevel, PathBuf)| dunce::canonicalize(&val.1).ok());
   files.extend(file_paths);
   if files.is_empty() {
-    Err(ConfigError::FileNotFound)
+    Err(ConfigError::FileNotFound.into())
   } else {
     Ok(files.into_iter())
   }
@@ -441,34 +448,37 @@ fn replace_in_pattern(pattern: &str, to: &str) -> Result<String, ConfigError> {
 
 /// Defines a few general-purpose environment variables that may be used from within configuration files.
 /// This calls [`set_env_vars_impl`] exactly once per process.
-fn set_env_vars(exec_type: ExecType, is_debug: bool) {
-  static VAL: OnceLock<()> = OnceLock::new();
-  VAL.get_or_init(|| set_env_vars_impl(exec_type, is_debug));
+fn set_env_vars(exec_type: ExecType, is_debug: bool) -> &'static io::Result<()> {
+  static VAL: OnceLock<io::Result<()>> = OnceLock::new();
+  VAL.get_or_init(|| set_env_vars_impl(exec_type, is_debug))
 }
 
-fn set_env_vars_impl(exec_type: ExecType, is_debug: bool) {
-  let set_env_var = |name: &str, val: &OsStr| {
-    mod_debug!(is_debug, "Setting `{}` to {:?}", name, val);
+fn set_env_vars_impl(exec_type: ExecType, is_debug: bool) -> io::Result<()> {
+  let set_env_var = |name: &str, val: &OsStr| -> io::Result<()> {
+    mod_debug!(is_debug, "Setting `{}` to {:?}", name, val)?;
     env::set_var(name, val);
+    Ok(())
   };
 
-  set_env_var("dir", crate::process::dir().as_ref());
+  set_env_var("dir", crate::env::dir().as_ref())?;
   if let Some(dir) = dirs::home_dir() {
-    set_env_var("home", dir.as_ref());
+    set_env_var("home", dir.as_ref())?;
   }
-  set_env_var("name", crate::process::name());
-  set_env_var("path", crate::process::path().as_ref());
-  set_env_var("pid", process::id().to_string().as_ref());
+  set_env_var("name", crate::env::name())?;
+  set_env_var("path", crate::env::path().as_ref())?;
+  set_env_var("pid", process::id().to_string().as_ref())?;
 
   if exec_type == ExecType::Binary {
-    set_env_var("inv_dir", crate::process::inv_dir().as_ref());
-    set_env_var("inv_name", crate::process::inv_name());
-    set_env_var("inv_path", crate::process::inv_path().as_ref());
+    set_env_var("inv_dir", crate::env::inv_dir().as_ref())?;
+    set_env_var("inv_name", crate::env::inv_name())?;
+    set_env_var("inv_path", crate::env::inv_path().as_ref())?;
   }
 
   if exec_type.is_test() {
-    set_env_var("test_name", crate::process::test_name());
+    set_env_var("test_name", crate::env::test_name())?;
   }
+
+  Ok(())
 }
 
 // Tests ====================================================================================================

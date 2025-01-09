@@ -1,9 +1,15 @@
 // meadows-bare.rs
 
-//! A bare program that consists of a single [`println`] statement only.
+//! A bare program that consists of a single [`writeln`] statement only.
 
-fn main() {
-  println!("This is meadows-bare");
+use std::io;
+use std::io::Write;
+
+use anyhow::Ok;
+
+fn main() -> anyhow::Result<()> {
+  writeln!(io::stdout(), "This is meadows-bare")?;
+  Ok(())
 }
 
 // EOF

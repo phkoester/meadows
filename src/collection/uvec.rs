@@ -38,9 +38,9 @@
 
 use std::cmp::Ordering;
 use std::collections::HashSet;
+use std::fmt;
 use std::fmt::Debug;
 use std::fmt::Formatter;
-use std::fmt::Result;
 use std::hash::Hash;
 use std::ops::Deref;
 use std::ops::Index;
@@ -219,9 +219,7 @@ where
   /// ```
   #[inline]
   #[must_use]
-  pub fn new() -> Self {
-    Self { set: HashSet::new(), vec: Vec::new(), key: &|val: &V| Some(val.clone()) }
-  }
+  pub fn new() -> Self { Self { set: HashSet::new(), vec: Vec::new(), key: &|val: &V| Some(val.clone()) } }
 }
 
 impl<K, V> AsRef<[V]> for Uvec<'_, K, V> {
@@ -239,7 +237,7 @@ where
   V: Debug,
 {
   #[inline]
-  fn fmt(&self, f: &mut Formatter<'_>) -> Result { self.vec.fmt(f) }
+  fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result { self.vec.fmt(f) }
 }
 
 /// A [`Uvec`] implements [`Default`] if the types `K` and `V` are identical.

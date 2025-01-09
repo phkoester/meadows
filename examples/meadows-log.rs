@@ -1,7 +1,9 @@
-// main.rs
+// meadows-log.rs
 
 //! An example program that shows how to set up `tracing` using [`meadows::tracing::config::init`].
 
+use std::io;
+use std::io::Write;
 use std::process;
 
 use meadows::process::ExecType;
@@ -15,15 +17,16 @@ use tracing::instrument;
 
 #[instrument(ret)]
 fn run() -> anyhow::Result<()> {
-  println!("This is meadows-log");
+  let mut stdout = io::stdout();
+  writeln!(stdout, "This is meadows-log")?;
   info!("A log message");
-  println!("Done.");
+  writeln!(stdout, "Done.")?;
   Ok(())
 }
 
 // `main` ---------------------------------------------------------------------------------------------------
 
-fn main() {
+fn main() -> io::Result<()> {
   // Init logging
 
   config::init(&Config::new(ExecType::Example));
@@ -31,9 +34,10 @@ fn main() {
   // Run
 
   if let Err(err) = run() {
-    process_error!("{err:#}");
+    process_error!("{err:#}")?;
     process::exit(1);
   }
+  Ok(())
 }
 
 // EOF

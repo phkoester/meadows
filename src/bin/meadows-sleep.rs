@@ -9,10 +9,12 @@
 //! | `N`      | Number of seconds to sleep. Default: 5
 
 use std::env;
+use std::io;
+use std::io::Write;
 use std::thread;
 use std::time::Duration;
 
-fn main() {
+fn main() -> anyhow::Result<()>{
   let mut n = 5_u64;
 
   if let Some(arg) = env::args().nth(1) {
@@ -20,9 +22,12 @@ fn main() {
   }
 
   if n > 0 {
-    println!("Sleeping {n} seconds ...");
+    let mut stdout = io::stdout();
+    writeln!(stdout, "Sleeping {n} seconds ...")?;
     thread::sleep(Duration::from_secs(n));
   }
+
+  Ok(())
 }
 
 // EOF

@@ -20,6 +20,8 @@ coverage:
 	@# Remove doc-test executables
 	@rm -rfv $(BIN_DIR)/src_*_rs_*
 	@echo Created $(COVERAGE_DIR)/html/index.html
-	@echo Done.
+
+test-doc:
+	@cargo test --doc -- --show-output
 
 # EOF

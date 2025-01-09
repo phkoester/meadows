@@ -11,7 +11,6 @@
 use std::env;
 use std::ffi::OsString;
 use std::path::Path;
-use std::process;
 use std::sync::OnceLock;
 
 use tracing::info;
@@ -21,7 +20,6 @@ use tracing_config::TracingConfigError;
 
 use crate::prelude::*;
 use crate::process::ExecType;
-use crate::process_error;
 use crate::process_note;
 
 // `Config` -------------------------------------------------------------------------------------------------
@@ -68,9 +66,9 @@ impl Config {
 
     let is_debug = get_env_debug().unwrap_or(false);
     let name = match exec_type {
-      Binary => crate::process::inv_name(),
-      Example => crate::process::name(),
-      DocTest | UnitTest | IntegTest | BenchTest => crate::process::test_name(),
+      Binary => crate::env::inv_name(),
+      Example => crate::env::name(),
+      DocTest | UnitTest | IntegTest | BenchTest => crate::env::test_name(),
     };
     let paths = get_env();
     Config {
@@ -98,7 +96,7 @@ fn init_file(config: &Config, file: &Path) -> Result<ArcMutexGuard, TracingConfi
     tracing_config::config::read_config(file, tracing_config::config::RESOLVE_FROM_ENV_DEPTH)?;
 
   if config.print_path {
-    process_note!("Loaded configuration file `{}` titled `{}`", file.display(), tracing_config.title);
+    process_note!("Loaded configuration file `{}` titled `{}`", file.display(), tracing_config.title)?;
   }
 
   // Apply configuration
@@ -153,8 +151,8 @@ pub fn init(config: &Config) -> &'static ArcMutexGuard {
     match try_init_impl(config) {
       Ok(guard) => guard,
       Err(err) => {
-        process_error!("{:#}", err.context("Cannot initialize logging"));
-        process::exit(2);
+        // XXX
+        panic!("{:#}", err.context("Cannot initialize logging"));
       }
     }
   })
@@ -165,13 +163,13 @@ fn start_message(config: &Config, config_path: &Path) -> String {
 
   // "Process started"
 
-  let inv_name = crate::process::inv_name().to_string_lossy();
+  let inv_name = crate::env::inv_name().to_string_lossy();
   let current_dir_str = match env::current_dir() {
     Ok(dir) => format!("{dir:?}"),
     Err(_) => String::from("-"),
   };
-  let inv_path = crate::process::inv_path();
-  let path = crate::process::path();
+  let inv_path = crate::env::inv_path();
+  let path = crate::env::path();
 
   ret.push_str(&format!(
         "\
