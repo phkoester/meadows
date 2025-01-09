@@ -10,14 +10,17 @@
 
 use std::env;
 use std::ffi::OsString;
+use std::io;
 use std::path::Path;
 use std::sync::OnceLock;
 
+use thiserror::Error as ThisError;
 use tracing::info;
 use tracing_config;
 use tracing_config::config::ArcMutexGuard;
 use tracing_config::TracingConfigError;
 
+use crate::config::FindError;
 use crate::prelude::*;
 use crate::process::ExecType;
 use crate::process_note;
@@ -83,13 +86,29 @@ impl Config {
   }
 }
 
+// `InitError` ---------------------------------------------------------------------------------------------
+
+/// Error type for [`init`]  and [`try_init`].
+#[derive(Debug, ThisError)]
+pub enum InitError {
+  /// [`FindError`]
+  #[error("{0}")]
+  Find(#[from] FindError),
+  /// [`io::Error`].
+  #[error("{0}")]
+  Io(#[from] io::Error),
+  /// [`TracingConfigError`].
+  #[error("{0}")]
+  TracingConfig(#[from] TracingConfigError),
+}
+
 // Functions ------------------------------------------------------------------------------------------------
 
 fn get_env() -> Option<OsString> { env::var_os("tracing_config") }
 
 fn get_env_debug() -> Option<bool> { env::var_os("tracing_config_debug").map(|val| val == "true") }
 
-fn init_file(config: &Config, file: &Path) -> Result<ArcMutexGuard, TracingConfigError> {
+fn init_file(config: &Config, file: &Path) -> Result<ArcMutexGuard, InitError> {
   // Read configuration
 
   let tracing_config =
@@ -101,7 +120,15 @@ fn init_file(config: &Config, file: &Path) -> Result<ArcMutexGuard, TracingConfi
 
   // Apply configuration
 
-  tracing_config::config::init_config(config.is_debug, &tracing_config)
+  match tracing_config::config::init_config(config.is_debug, &tracing_config) {
+    Ok(guard) => {
+      if config.log_start {
+        info!("{}", start_message(config, file));
+      }
+      Ok(guard)
+    }
+    Err(err) => Err(err.into()),
+  }
 }
 
 /// Initializes `tracing` for an example or test executable with the given configuration.
@@ -152,7 +179,7 @@ pub fn init(config: &Config) -> &'static ArcMutexGuard {
       Ok(guard) => guard,
       Err(err) => {
         // XXX
-        panic!("{:#}", err.context("Cannot initialize logging"));
+        panic!("Cannot initialize logging: {err}");
       }
     }
   })
@@ -209,8 +236,9 @@ Path             : {path:?}
 ///
 /// # Errors
 ///
-/// Returns
+/// Returns [`Err`] with
 ///
+/// - XXX
 /// - [`crate::config::ConfigError`] if searching the configuration file fails;
 /// - [`tracing_config::TracingConfigError`] if the underlying initialization of [`tracing_config`] fails.
 ///
@@ -238,12 +266,12 @@ Path             : {path:?}
 ///   // ...
 /// }
 #[allow(clippy::needless_doctest_main)]
-pub fn try_init(config: &Config) -> anyhow::Result<ArcMutexGuard> {
+pub fn try_init(config: &Config) -> Result<ArcMutexGuard, InitError> {
   assert!(config.exec_type == ExecType::Binary);
   try_init_impl(config)
 }
 
-fn try_init_impl(config: &Config) -> anyhow::Result<ArcMutexGuard> {
+fn try_init_impl(config: &Config) -> Result<ArcMutexGuard, InitError> {
   // Look for configuration file
 
   let config_file = crate::config::find_config_file(
@@ -257,11 +285,7 @@ fn try_init_impl(config: &Config) -> anyhow::Result<ArcMutexGuard> {
 
   // Load configuration file
 
-  let guard = init_file(config, &config_file.1)?;
-  if config.log_start {
-    info!("\n{}", start_message(config, &config_file.1));
-  }
-  Ok(guard)
+  init_file(config, &config_file.1)
 }
 
 // Tests ====================================================================================================

@@ -28,17 +28,20 @@ macro_rules! mod_debug {
   }};
 }
 
-// `ConfigError` --------------------------------------------------------------------------------------------
+// `FindError` ---------------------------------------------------------------------------------------------
 
 /// Error type for the `find` functions.
-#[derive(Debug, Eq, PartialEq, ThisError)]
-pub enum ConfigError {
+#[derive(Debug, ThisError)]
+pub enum FindError {
   /// File not found.
   #[error("File not found")]
   FileNotFound,
   /// Invalid file-name pattern.
   #[error("Invalid file-name pattern `{0}`")]
   InvalidFileNamePattern(String),
+  /// [`io::Error`].
+  #[error("{0}")]
+  Io(#[from] io::Error),
 }
 
 // `ConfigLevel` --------------------------------------------------------------------------------------------
@@ -107,7 +110,7 @@ pub enum ConfigLevel {
 /// use meadows::config;
 /// use meadows::process::ExecType;
 ///
-/// # fn run() -> anyhow::Result<()> {
+/// # fn run() -> Result<(), Box<dyn std::error::Error>> {
 /// let config_file = config::find_config_file(
 ///   ExecType::Binary,                  // `exec_type`
 ///   "{}config.toml",                   // `file_name_pattern`
@@ -129,7 +132,7 @@ pub fn find_config_file(
   name: &OsStr,
   paths: Option<&OsStr>,
   set_env_vars: bool,
-) -> anyhow::Result<(ConfigLevel, PathBuf)> {
+) -> Result<(ConfigLevel, PathBuf), FindError> {
   let files =
     find_config_files_impl(true, exec_type, file_name_pattern, is_debug, name, paths, set_env_vars)?;
   // If no error occurred, there must be at least one file, so `unwrap` is safe
@@ -184,11 +187,11 @@ pub fn find_config_file(
 ///
 /// # Errors
 ///
-/// Returns
+/// Returns [`Err`] with
 ///
-/// - [`ConfigError::FileNotFound`] if a configuration file cannot be found;
-/// - [`ConfigError::InvalidFileNamePattern`] if `file_name_pattern` does not contain `"{}"`;
-/// - [`io::Error`] if an I/O error occurs.
+/// - [`FindError::FileNotFound`] if a configuration file cannot be found;
+/// - [`FindError::InvalidFileNamePattern`] if `file_name_pattern` does not contain `"{}"`;
+/// - [`FindError::Io`] if an [`io::Error`] occurs.
 ///
 /// # Examples
 ///
@@ -198,7 +201,7 @@ pub fn find_config_file(
 /// use meadows::config;
 /// use meadows::process::ExecType;
 ///
-/// # fn run() -> anyhow::Result<()> {
+/// # fn run() -> Result<(), Box<dyn std::error::Error>> {
 /// let config_files = config::find_config_files(
 ///   ExecType::Binary,                  // `exec_type`
 ///   "{}config.toml",                   // `file_name_pattern`
@@ -223,7 +226,7 @@ pub fn find_config_files(
   name: &OsStr,
   paths: Option<&OsStr>,
   set_env_vars: bool,
-) -> anyhow::Result<impl IntoIterator<Item = (ConfigLevel, PathBuf)>> {
+) -> Result<impl IntoIterator<Item = (ConfigLevel, PathBuf)>, FindError> {
   find_config_files_impl(false, exec_type, file_name_pattern, is_debug, name, paths, set_env_vars)
 }
 
@@ -235,7 +238,7 @@ fn find_config_files_impl(
   name: &OsStr,
   paths: Option<&OsStr>,
   set_env_vars: bool,
-) -> anyhow::Result<impl IntoIterator<Item = (ConfigLevel, PathBuf)>> {
+) -> Result<impl IntoIterator<Item = (ConfigLevel, PathBuf)>, FindError> {
   use ConfigLevel::*;
   use ExecType::*;
 
@@ -260,9 +263,7 @@ fn find_config_files_impl(
   // If requested, set env vars. This is executed only once
 
   if set_env_vars {
-    if let Err(err) = self::set_env_vars(exec_type, is_debug) {
-      return Err(err.into());
-    }
+    self::set_env_vars(exec_type, is_debug)?;
   }
 
   // Collect paths to probe, ordered from highest to lowest priority
@@ -425,13 +426,13 @@ fn find_config_files_impl(
   let mut files = Uvec::with_key(&|val: &(ConfigLevel, PathBuf)| dunce::canonicalize(&val.1).ok());
   files.extend(file_paths);
   if files.is_empty() {
-    Err(ConfigError::FileNotFound.into())
+    Err(FindError::FileNotFound)
   } else {
     Ok(files.into_iter())
   }
 }
 
-fn replace_in_pattern(pattern: &str, to: &str) -> Result<String, ConfigError> {
+fn replace_in_pattern(pattern: &str, to: &str) -> Result<String, FindError> {
   let from = "{}";
   if let Some(index) = pattern.find(from) {
     let ldot = index > 0;
@@ -442,15 +443,18 @@ fn replace_in_pattern(pattern: &str, to: &str) -> Result<String, ConfigError> {
     let to = format!("{ldot_str}{to}{rdot_str}");
     Ok(pattern.replacen(from, &to, 1))
   } else {
-    Err(ConfigError::InvalidFileNamePattern(pattern.to_owned()))
+    Err(FindError::InvalidFileNamePattern(pattern.to_owned()))
   }
 }
 
 /// Defines a few general-purpose environment variables that may be used from within configuration files.
 /// This calls [`set_env_vars_impl`] exactly once per process.
-fn set_env_vars(exec_type: ExecType, is_debug: bool) -> &'static io::Result<()> {
+fn set_env_vars(exec_type: ExecType, is_debug: bool) -> io::Result<()> {
   static VAL: OnceLock<io::Result<()>> = OnceLock::new();
-  VAL.get_or_init(|| set_env_vars_impl(exec_type, is_debug))
+  match VAL.get_or_init(|| set_env_vars_impl(exec_type, is_debug)) {
+    Ok(_) => Ok(()),
+    Err(err) => Err(io::Error::new(err.kind(), err.to_string())),
+  }
 }
 
 fn set_env_vars_impl(exec_type: ExecType, is_debug: bool) -> io::Result<()> {
@@ -490,15 +494,9 @@ mod tests {
   // Functions ----------------------------------------------------------------------------------------------
 
   #[test]
-  fn test_replace_in_pattern() -> Result<(), ConfigError> {
-    assert_eq!(
-      replace_in_pattern("", "name").unwrap_err(),
-      ConfigError::InvalidFileNamePattern("".to_owned())
-    );
-    assert_eq!(
-      replace_in_pattern("begend", "name").unwrap_err(),
-      ConfigError::InvalidFileNamePattern("begend".to_owned())
-    );
+  fn test_replace_in_pattern() -> Result<(), FindError> {
+    assert!(matches!(replace_in_pattern("", "name"), Err(FindError::InvalidFileNamePattern(_))));
+    assert!(matches!(replace_in_pattern("begend", "name"), Err(FindError::InvalidFileNamePattern(_))));
 
     assert_eq!(replace_in_pattern("{}", "name")?, "name");
     assert_eq!(replace_in_pattern("{}", "")?, "");
