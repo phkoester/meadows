@@ -3,9 +3,9 @@
 //! # Meadows
 //!
 //! Meadows is an experimental library written in Rust.
-//! 
+//!
 //! ## Crate Features
-//! 
+//!
 //! - `tracing_config` - When enabled, the `crate::tracing::config` module is available. This is **disabled
 //!   by default.**
 

@@ -3,7 +3,7 @@
 #![allow(missing_docs)]
 
 //! Code snippets testing the current Rustfmt configuration.
-//! 
+//!
 //! The sources in this file are not supposed to run or actually test anything except how they are formatted
 //! by Rustfmt.
 

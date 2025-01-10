@@ -10,7 +10,7 @@
 ///
 /// # Errors
 ///
-/// Returns [`Err`] with [`std::io::Error`] if an I/O error occurs.
+/// The macro evaluates to [`std::io::Result<()>`].
 ///
 /// # Examples
 ///
@@ -43,7 +43,7 @@ macro_rules! process_error {
 ///
 /// # Errors
 ///
-/// Returns [`Err`] with [`std::io::Error`] if an I/O error occurs.
+/// The macro evaluates to [`std::io::Result<()>`].
 ///
 /// # Examples
 ///
@@ -76,7 +76,7 @@ macro_rules! process_note {
 ///
 /// # Errors
 ///
-/// Returns [`Err`] with [`std::io::Error`] if an I/O error occurs.
+/// The macro evaluates to [`std::io::Result<()>`].
 ///
 /// # Examples
 ///

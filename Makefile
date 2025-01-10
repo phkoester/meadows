@@ -21,6 +21,9 @@ coverage:
 	@rm -rfv $(BIN_DIR)/src_*_rs_*
 	@echo Created $(COVERAGE_DIR)/html/index.html
 
+fmt-check:
+	@cargo +nightly fmt --check
+	
 test-doc:
 	@cargo test --doc -- --show-output
 

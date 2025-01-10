@@ -7,10 +7,10 @@ use std::io;
 use std::io::BufRead;
 use std::path::Path;
 
-/// Use this function to read lines from a file.
+/// Reads lines from a file.
 ///
 /// # Errors
-/// 
+///
 /// See [`File::open`].
 pub fn read_lines<P>(path: P) -> io::Result<io::Lines<io::BufReader<File>>>
 where

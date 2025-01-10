@@ -26,9 +26,7 @@ mod tests {
   use super::*;
 
   #[bench]
-  fn bench_str_to_owned(b: &mut Bencher) {
-    b.iter(|| format!("{}", use_str_to_owned("hello")));
-  }
+  fn bench_str_to_owned(b: &mut Bencher) { b.iter(|| format!("{}", use_str_to_owned("hello"))); }
 
   #[bench]
   fn bench_str_to_string(b: &mut Bencher) { b.iter(|| format!("{}", use_str_to_string("hello"))); }

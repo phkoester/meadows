@@ -17,10 +17,13 @@ use crate::process::ExecType;
 
 // Macros ---------------------------------------------------------------------------------------------------
 
+/// The macro evaluates to [`io::Result<()>`].
 macro_rules! debug {
   ($is_debug:expr, $($arg:tt)+) => {{
     if $is_debug {
-      writeln!(io::stdout(), "[meadows::config] {}", format_args!($($arg)+))?;
+      writeln!(io::stdout(), "[meadows::config] {}", format_args!($($arg)+))
+    } else {
+      Ok(())
     }
   }}
 }
@@ -140,7 +143,8 @@ pub fn find_config_file(
   Ok(files.into_iter().next().unwrap())
 }
 
-/// Finds one or more configuration files, ordered from highest to lowest priority.
+/// Finds one or more configuration files suitable for a given `exec_type`, ordered from highest to lowest
+/// priority.
 ///
 /// # Environment Variables
 ///
@@ -148,29 +152,19 @@ pub fn find_config_file(
 /// is read. If `set_env_vars` is `true`, the function defines a few environment variables containing some
 /// information about the currently running executable. This is done at most once per process.
 ///
-/// The following variables are set for all executables:
+/// The following variables are set:
 ///
-/// | Name   | Description
-/// | :----- | :-----------
-/// | `dir`  | The canonical directory of the executable, as returned by [`dir`](crate::env::dir)
-/// | `home` | The current user's home directory, as returned by [`dirs::home_dir`]
-/// | `name` | The canonical name of the executable, as returned by [`name`](crate::env::name)
-/// | `path` | The canonical path of the executable, as returned by [`path`](crate::env::path)
-/// | `pid`  | The process ID (PID) of the executable
-///
-/// The following variables are set for binary executables only:
-///
-/// | Name       | Description
-/// | :--------  | :----------
-/// | `inv_dir`  | The invocation directory of the executable, as returned by [`inv_dir`](crate::env::inv_dir)
-/// | `inv_name` | The invocation name of the executable, as returned by [`inv_name`](crate::env::inv_name)
-/// | `inv_path` | The invocation path of the executable, as returned by [`inv_path`](crate::env::inv_path)
-///
-/// The following variables are set for test executables only:
-///
-/// | Name        | Description
-/// | :---------- | :----------
-/// | `test_name` | The canonical test name of the executable, as returned by [`test_name`](crate::env::test_name)
+/// | Name        | `exec_type`      | Description
+/// | :---------- | :--------------- | :-----------
+/// | `dir`       | Any              | The canonical directory of the executable, as returned by [`dir`]
+/// | `home_dir`  | Any              | The current user's home directory, as returned by [`dirs::home_dir`]
+/// | `name`      | Any              | The canonical name of the executable, as returned by [`name`]
+/// | `path`      | Any              | The canonical path of the executable, as returned by [`path`]
+/// | `pid`       | Any              | The process ID (PID) of the executable
+/// | `inv_dir`   | [`Binary`]       | The invocation directory of the executable, as returned by [`inv_dir`]
+/// | `inv_name`  | [`Binary`]       | The invocation name of the executable, as returned by [`inv_name`]
+/// | `inv_path`  | [`Binary`]       | The invocation path of the executable, as returned by [`inv_path`]
+/// | `test_name` | Test executables | The canonical test name of the executable, as returned by [`test_name`]
 ///
 /// # Safety
 ///
@@ -182,9 +176,58 @@ pub fn find_config_file(
 /// If `is_debug` is `true`, the function outputs additional debug information on `stdout` that helps to
 /// trace the file search.
 ///
-/// As an example, let `file_name_pattern` be `"{}config.toml"`, let `name` be `"out"`.
+/// As an example, let `file_name_pattern` be `"{}config.toml"`. Let the current working directory be
+/// `/home/alice`.
 ///
-/// XXX
+/// In the following, these placeholders are used:
+///
+/// | Placeholder           | Description
+/// | :-------------------- | :----------
+/// | `{config_dir}`        | A system-dependent directory as returned by [`dirs::config_dir`]
+/// | `{config_local_dir}`  | A system-dependent directory as returned by [`dirs::config_local_dir`]
+/// | `{home_dir}`          | The user's home directory as returned by [`dirs::home_dir`], e.g. `/home/alice`
+/// | `{inv_dir}`           | The invocation directory as returned by [`inv_dir`]
+/// | `{manifest_dir}`      | The Cargo-manifest directory. This applies only if the executable is run via Cargo
+/// | `{name}`              | `name`
+/// | `{path}`              | Each path from `paths`, which is separated by the system-dependent path separator. Each path may point to a file or directory. This applies only if `paths` is a [`Some`]
+/// | `{system_config_dir}` | A system-dependent directory as returned by [`system_config_dir`]
+///
+/// The function probes the following paths, from highest to lowest priority, in the exact order shown, if
+/// they point to existing files:
+///
+/// | Configuration Level | `exec_type`               | Path
+/// | :------------------ | :------------------------ | :---
+/// | [`Path`]            | Any                       | `{path}`
+/// | [`Path`]            | Any                       | `{path}/{name}.config.toml`
+/// | [`Path`]            | Any                       | `{path}/.{name}/config.toml`
+/// | [`Instance`]        | [`Binary`]                | `/home/alice/{name}.config.toml`
+/// | [`Instance`]        | [`Binary`]                | `/home/alice/.{name}/config.toml`
+/// | [`Instance`]        | [`Binary`]                | `/home/{name}.config.toml`
+/// | [`Instance`]        | [`Binary`]                | `/home/.{name}/config.toml`
+/// | [`Instance`]        | [`Binary`]                | `/{name}.config.toml`
+/// | [`Instance`]        | [`Binary`]                | `/.{name}/config.toml`
+/// | [`Cargo`]           | [`Binary`]                | `{manifest_dir}/src/{name}.config.toml`
+/// | [`Cargo`]           | [`Binary`]                | `{manifest_dir}/src/bin/{name}.config.toml`
+/// | [`Cargo`]           | [`Example`]               | `{manifest_dir}/examples/{name}.config.toml`
+/// | [`Cargo`]           | [`Example`]               | `{manifest_dir}/examples/config.toml`
+/// | [`Cargo`]           | [`DocTest`], [`UnitTest`] | `{manifest_dir}/src/{name}.config.toml`
+/// | [`Cargo`]           | [`DocTest`], [`UnitTest`] | `{manifest_dir}/src/config.toml`
+/// | [`Cargo`]           | [`IntegTest`]             | `{manifest_dir}/tests/{name}.config.toml`
+/// | [`Cargo`]           | [`IntegTest`]             | `{manifest_dir}/tests/config.toml`
+/// | [`Cargo`]           | [`BenchTest`]             | `{manifest_dir}/benches/{name}.config.toml`
+/// | [`Cargo`]           | [`BenchTest`]             | `{manifest_dir}/benches/config.toml`
+/// | [`Local`]           | [`Binary`]                | `{home_dir}/{name}.config.toml`
+/// | [`Local`]           | [`Binary`]                | `{home_dir}/.{name}/config.toml`
+/// | [`Local`]           | [`Binary`]                | `{config_local_dir}/{name}/config.toml`
+/// | [`User`]            | [`Binary`]                | `{config_dir}/{name}/config.toml`
+/// | [`System`]          | [`Binary`]                | `{system_config_dir}/{name}.config.toml`
+/// | [`System`]          | [`Binary`]                | `{system_config_dir}/{name}/config.toml`
+/// | [`Executable`]      | [`Binary`]                | `{inv_dir}/{name}.config.toml`
+///
+/// The function returns an [`IntoIterator`] that produces pairs of [`ConfigLevel`]s and [`PathBuf`]s for
+/// existing files. How multiple configuration files are combined into a specific configuration, is left
+/// entirely to the program. The general idea is that settings from a configuration file override settings
+/// from a preceding configuration file.
 ///
 /// # Errors
 ///
@@ -220,6 +263,30 @@ pub fn find_config_file(
 /// #
 /// # run();
 /// ```
+///
+/// [`dir`]: crate::env::dir
+/// [`inv_dir`]: crate::env::inv_dir
+/// [`inv_name`]: crate::env::inv_name
+/// [`inv_path`]: crate::env::inv_path
+/// [`name`]: crate::env::name
+/// [`path`]: crate::env::path
+/// [`system_config_dir`]: crate::env::system_config_dir
+/// [`test_name`]: crate::env::test_name
+///
+/// [`Path`]: ConfigLevel::Path
+/// [`Instance`]: ConfigLevel::Instance
+/// [`Cargo`]: ConfigLevel::Cargo
+/// [`Local`]: ConfigLevel::Local
+/// [`User`]: ConfigLevel::User
+/// [`System`]: ConfigLevel::System
+/// [`Executable`]: ConfigLevel::Executable
+///
+/// [`Binary`]: ExecType::Binary
+/// [`Example`]: ExecType::Example
+/// [`DocTest`]: ExecType::DocTest
+/// [`UnitTest`]: ExecType::UnitTest
+/// [`IntegTest`]: ExecType::IntegTest
+/// [`BenchTest`]: ExecType::BenchTest
 pub fn find_config_files(
   exec_type: ExecType,
   file_name_pattern: &str,
@@ -252,14 +319,14 @@ fn find_config_files_impl(
     UnitTest => "unit-test",
     IntegTest => "integration-test",
     BenchTest => "benchmark-test",
-  });
+  })?;
 
   debug!(is_debug, "Current directory: {}", {
     match env::current_dir() {
       Ok(dir) => format!("{dir:?}"),
       Err(_) => String::from("-"),
     }
-  });
+  })?;
 
   // If requested, set env vars. This is executed only once
 
@@ -288,7 +355,9 @@ fn find_config_files_impl(
       file_paths.push((level, path.clone()));
       if is_debug {
         let level_str = format!("{level:?}");
-        debug!(is_debug, "{level_str:<10} | Adding path {path:?}");
+        let bullet = if path.is_file() { "*" } else { "" };
+        debug!(is_debug, "{level_str:<10} | {bullet:<1} {path:?}")?;
+        // In debug mode, we don't return quickly
         Ok(None)
       } else if find_one && path.is_file() {
         Ok(Some((level, path)))
@@ -303,7 +372,7 @@ fn find_config_files_impl(
       if let Some(val) = add_file_path($level, $path)? {
         return Ok(vec![val].into_iter());
       }
-    }}
+    }};
   }
 
   // Level `Path`
@@ -425,14 +494,14 @@ fn set_env_vars(exec_type: ExecType, is_debug: bool) -> io::Result<()> {
 
 fn set_env_vars_impl(exec_type: ExecType, is_debug: bool) -> io::Result<()> {
   let set_env_var = |name: &str, val: &OsStr| -> io::Result<()> {
-    debug!(is_debug, "Setting `{}` to {:?}", name, val);
+    debug!(is_debug, "Setting `{name}` to {val:?}")?;
     env::set_var(name, val);
     Ok(())
   };
 
   set_env_var("dir", crate::env::dir().as_ref())?;
   if let Some(dir) = dirs::home_dir() {
-    set_env_var("home", dir.as_ref())?;
+    set_env_var("home_dir", dir.as_ref())?;
   }
   set_env_var("name", crate::env::name())?;
   set_env_var("path", crate::env::path().as_ref())?;
