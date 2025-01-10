@@ -11,10 +11,10 @@
 //! If the types `K` and `V` are identical, a [`Uvec`] may be created using the [`new`] function. In this
 //! case, the key-generating function is automatically supplied and simply clones the values so they can be
 //! used as keys.
-//!
+//! 
 //! ```
-//! # use meadows::collection::Uvec;
-//! #
+//! use meadows::collection::Uvec;
+//! 
 //! let mut uvec = Uvec::new();
 //! assert_eq!(uvec.push("hello"), true);
 //! assert_eq!(uvec.push("hello"), false); // Duplicate value: inserting fails
@@ -24,14 +24,18 @@
 //! equivalent paths can be inserted into the [`Uvec`]:
 //!
 //! ```
-//! # use std::path::PathBuf;
-//! # use meadows::collection::Uvec;
-//! #
+//! # fn run() {
+//! use std::path::PathBuf;
+//! use meadows::collection::Uvec;
+//! 
 //! // If canonicalizing fails, no key is generated
 //! let mut uvec = Uvec::with_key(&|val: &PathBuf| dunce::canonicalize(val).ok());
 //! assert_eq!(uvec.push(PathBuf::from("beetlejuice")), false); // Path does not exist: inserting fails
 //! assert_eq!(uvec.push(PathBuf::from(".")), true);
 //! assert_eq!(uvec.push(PathBuf::from(".")), false); // Duplicate value: inserting fails
+//! # }
+//! # #[cfg(not(miri))]
+//! # run();
 //! ```
 //!
 //! [`new`]: Uvec::new
@@ -175,6 +179,7 @@ where
   /// # Examples
   ///
   /// ```
+  /// # fn run() {
   /// use std::path::PathBuf;
   ///
   /// use meadows::collection::Uvec;
@@ -184,6 +189,9 @@ where
   /// assert_eq!(uvec.push(PathBuf::from("beetlejuice")), false); // Path does not exist: inserting fails
   /// assert_eq!(uvec.push(PathBuf::from(".")), true);
   /// assert_eq!(uvec.push(PathBuf::from(".")), false); // Duplicate value: inserting fails
+  /// # }
+  /// # #[cfg(not(miri))]
+  /// # run();
   /// ```
   #[inline]
   #[must_use]
@@ -415,6 +423,7 @@ mod tests {
     assert_eq!(uvec.vec, vec![1, 2, 3]);
   }
 
+  #[cfg_attr(miri, ignore)]
   #[test]
   fn test_uvec_with_key_canonicalize() {
     let current_dir = env::current_dir().unwrap();

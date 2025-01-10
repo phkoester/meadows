@@ -77,7 +77,7 @@ pub enum ConfigLevel {
   Local,
   /// Cargo-level configuration.
   ///
-  /// Configuration files at Cargo level reside relative to the crate's manifest directory. For those to be
+  /// Configuration files at Cargo level reside relative to the package's manifest directory. For those to be
   /// found, the executable must be run via Cargo and the environment variable `CARGO_MANIFEST_DIR` must be
   /// set.
   Cargo,
@@ -109,12 +109,12 @@ pub enum ConfigLevel {
 /// # Examples
 ///
 /// ```
+/// # fn run() -> anyhow::Result<()> {
 /// use std::env;
 ///
 /// use meadows::config;
 /// use meadows::process::ExecType;
 ///
-/// # fn run() -> anyhow::Result<()> {
 /// let config_file = config::find_config_file(
 ///   ExecType::Binary,                  // `exec_type`
 ///   "{}config.toml",                   // `file_name_pattern`
@@ -125,7 +125,7 @@ pub enum ConfigLevel {
 /// )?;
 /// #   Ok(())
 /// # }
-/// #
+/// # #[cfg(not(miri))]
 /// # run();
 /// ```
 #[allow(clippy::missing_panics_doc)]
@@ -181,48 +181,48 @@ pub fn find_config_file(
 ///
 /// In the following, these placeholders are used:
 ///
-/// | Placeholder           | Description
-/// | :-------------------- | :----------
-/// | `{config_dir}`        | A system-dependent directory as returned by [`dirs::config_dir`]
-/// | `{config_local_dir}`  | A system-dependent directory as returned by [`dirs::config_local_dir`]
-/// | `{home_dir}`          | The user's home directory as returned by [`dirs::home_dir`], e.g. `/home/alice`
-/// | `{inv_dir}`           | The invocation directory as returned by [`inv_dir`]
-/// | `{manifest_dir}`      | The Cargo-manifest directory. This applies only if the executable is run via Cargo
-/// | `{name}`              | `name`
-/// | `{path}`              | Each path from `paths`, which is separated by the system-dependent path separator. Each path may point to a file or directory. This applies only if `paths` is a [`Some`]
-/// | `{system_config_dir}` | A system-dependent directory as returned by [`system_config_dir`]
+/// | Placeholder            | Description
+/// | :--------------------- | :----------
+/// | `${config_dir}`        | A system-dependent directory as returned by [`dirs::config_dir`]
+/// | `${config_local_dir}`  | A system-dependent directory as returned by [`dirs::config_local_dir`]
+/// | `${home_dir}`          | The user's home directory as returned by [`dirs::home_dir`], e.g. `/home/alice`
+/// | `${inv_dir}`           | The invocation directory as returned by [`inv_dir`]
+/// | `${manifest_dir}`      | The Cargo-manifest directory. This applies only if the executable is run via Cargo
+/// | `${name}`              | `name`
+/// | `${path}`              | Each path from `paths`, which is separated by the system-dependent path separator. Each path may point to a file or directory. This applies only if `paths` is a [`Some`]
+/// | `${system_config_dir}` | A system-dependent directory as returned by [`system_config_dir`]
 ///
 /// The function probes the following paths, from highest to lowest priority, in the exact order shown, if
 /// they point to existing files:
 ///
 /// | Configuration Level | `exec_type`               | Path
 /// | :------------------ | :------------------------ | :---
-/// | [`Path`]            | Any                       | `{path}`
-/// | [`Path`]            | Any                       | `{path}/{name}.config.toml`
-/// | [`Path`]            | Any                       | `{path}/.{name}/config.toml`
-/// | [`Instance`]        | [`Binary`]                | `/home/alice/{name}.config.toml`
-/// | [`Instance`]        | [`Binary`]                | `/home/alice/.{name}/config.toml`
-/// | [`Instance`]        | [`Binary`]                | `/home/{name}.config.toml`
-/// | [`Instance`]        | [`Binary`]                | `/home/.{name}/config.toml`
-/// | [`Instance`]        | [`Binary`]                | `/{name}.config.toml`
-/// | [`Instance`]        | [`Binary`]                | `/.{name}/config.toml`
-/// | [`Cargo`]           | [`Binary`]                | `{manifest_dir}/src/{name}.config.toml`
-/// | [`Cargo`]           | [`Binary`]                | `{manifest_dir}/src/bin/{name}.config.toml`
-/// | [`Cargo`]           | [`Example`]               | `{manifest_dir}/examples/{name}.config.toml`
-/// | [`Cargo`]           | [`Example`]               | `{manifest_dir}/examples/config.toml`
-/// | [`Cargo`]           | [`DocTest`], [`UnitTest`] | `{manifest_dir}/src/{name}.config.toml`
-/// | [`Cargo`]           | [`DocTest`], [`UnitTest`] | `{manifest_dir}/src/config.toml`
-/// | [`Cargo`]           | [`IntegTest`]             | `{manifest_dir}/tests/{name}.config.toml`
-/// | [`Cargo`]           | [`IntegTest`]             | `{manifest_dir}/tests/config.toml`
-/// | [`Cargo`]           | [`BenchTest`]             | `{manifest_dir}/benches/{name}.config.toml`
-/// | [`Cargo`]           | [`BenchTest`]             | `{manifest_dir}/benches/config.toml`
-/// | [`Local`]           | [`Binary`]                | `{home_dir}/{name}.config.toml`
-/// | [`Local`]           | [`Binary`]                | `{home_dir}/.{name}/config.toml`
-/// | [`Local`]           | [`Binary`]                | `{config_local_dir}/{name}/config.toml`
-/// | [`User`]            | [`Binary`]                | `{config_dir}/{name}/config.toml`
-/// | [`System`]          | [`Binary`]                | `{system_config_dir}/{name}.config.toml`
-/// | [`System`]          | [`Binary`]                | `{system_config_dir}/{name}/config.toml`
-/// | [`Executable`]      | [`Binary`]                | `{inv_dir}/{name}.config.toml`
+/// | [`Path`]            | Any                       | `${path}`
+/// | [`Path`]            | Any                       | `${path}/.${name}.config.toml`
+/// | [`Path`]            | Any                       | `${path}/.${name}/config.toml`
+/// | [`Instance`]        | [`Binary`]                | `/home/alice/.${name}.config.toml`
+/// | [`Instance`]        | [`Binary`]                | `/home/alice/.${name}/config.toml`
+/// | [`Instance`]        | [`Binary`]                | `/home/.${name}.config.toml`
+/// | [`Instance`]        | [`Binary`]                | `/home/.${name}/config.toml`
+/// | [`Instance`]        | [`Binary`]                | `/.${name}.config.toml`
+/// | [`Instance`]        | [`Binary`]                | `/.${name}/config.toml`
+/// | [`Cargo`]           | [`Binary`]                | `${manifest_dir}/src/${name}.config.toml`
+/// | [`Cargo`]           | [`Binary`]                | `${manifest_dir}/src/bin/${name}.config.toml`
+/// | [`Cargo`]           | [`Example`]               | `${manifest_dir}/examples/${name}.config.toml`
+/// | [`Cargo`]           | [`Example`]               | `${manifest_dir}/examples/config.toml`
+/// | [`Cargo`]           | [`DocTest`], [`UnitTest`] | `${manifest_dir}/src/${name}.config.toml`
+/// | [`Cargo`]           | [`DocTest`], [`UnitTest`] | `${manifest_dir}/src/config.toml`
+/// | [`Cargo`]           | [`IntegTest`]             | `${manifest_dir}/tests/${name}.config.toml`
+/// | [`Cargo`]           | [`IntegTest`]             | `${manifest_dir}/tests/config.toml`
+/// | [`Cargo`]           | [`BenchTest`]             | `${manifest_dir}/benches/${name}.config.toml`
+/// | [`Cargo`]           | [`BenchTest`]             | `${manifest_dir}/benches/config.toml`
+/// | [`Local`]           | [`Binary`]                | `${home_dir}/.${name}.config.toml`
+/// | [`Local`]           | [`Binary`]                | `${home_dir}/.${name}/config.toml`
+/// | [`Local`]           | [`Binary`]                | `${config_local_dir}/${name}/config.toml`
+/// | [`User`]            | [`Binary`]                | `${config_dir}/${name}/config.toml`
+/// | [`System`]          | [`Binary`]                | `${system_config_dir}/${name}.config.toml`
+/// | [`System`]          | [`Binary`]                | `${system_config_dir}/${name}/config.toml`
+/// | [`Executable`]      | [`Binary`]                | `${inv_dir}/${name}.config.toml`
 ///
 /// The function returns an [`IntoIterator`] that produces pairs of [`ConfigLevel`]s and [`PathBuf`]s for
 /// existing files. How multiple configuration files are combined into a specific configuration, is left
@@ -240,12 +240,12 @@ pub fn find_config_file(
 /// # Examples
 ///
 /// ```
+/// # fn run() -> anyhow::Result<()> {
 /// use std::env;
 ///
 /// use meadows::config;
 /// use meadows::process::ExecType;
 ///
-/// # fn run() -> anyhow::Result<()> {
 /// let config_files = config::find_config_files(
 ///   ExecType::Binary,                  // `exec_type`
 ///   "{}config.toml",                   // `file_name_pattern`
@@ -260,7 +260,7 @@ pub fn find_config_file(
 /// }
 /// #   Ok(())
 /// # }
-/// #
+/// # #[cfg(not(miri))]
 /// # run();
 /// ```
 ///
@@ -334,18 +334,21 @@ fn find_config_files_impl(
     self::set_env_vars(exec_type, is_debug)?;
   }
 
-  // Collect paths to probe, ordered from highest to lowest priority
+  // Define a few names and relative paths
 
   let name = name.to_string_lossy();
-
   // `config.toml`
   let bare_file_name = replace_in_pattern(file_name_pattern, "")?;
   // `{name}.config.toml`
   let file_name = replace_in_pattern(file_name_pattern, &name)?;
-  // `.{name}/config.toml`
-  let hidden_relative_file = PathBuf::from(format!(".{name}")).join(&bare_file_name);
+  // `.{name}.config.toml`
+  let hidden_file_name = format!(".{file_name}");
   // `{name}/config.toml`
   let relative_file = PathBuf::from(name.as_ref()).join(&bare_file_name);
+  // `.{name}/config.toml`
+  let hidden_relative_file = PathBuf::from(format!(".{name}")).join(&bare_file_name);
+
+  // Collect paths to probe, ordered from highest to lowest priority
 
   let mut file_paths = Vec::new();
 
@@ -381,7 +384,7 @@ fn find_config_files_impl(
       if path.is_file() {
         add!(Path, path);
       } else {
-        add!(Path, path.join(&file_name));
+        add!(Path, path.join(&hidden_file_name));
         add!(Path, path.join(&hidden_relative_file));
       }
     }
@@ -391,7 +394,7 @@ fn find_config_files_impl(
   if exec_type == Binary {
     let mut dir = env::current_dir().ok();
     while let Some(val) = dir {
-      add!(Instance, val.join(&file_name));
+      add!(Instance, val.join(&hidden_file_name));
       add!(Instance, val.join(&hidden_relative_file));
       dir = val.parent().map(PathBuf::from);
     }
@@ -427,7 +430,7 @@ fn find_config_files_impl(
   // Level `Local`
   if exec_type == Binary {
     if let Some(dir) = dirs::home_dir() {
-      add!(Local, dir.join(&file_name));
+      add!(Local, dir.join(&hidden_file_name));
       add!(Local, dir.join(&hidden_relative_file));
     }
     if let Some(dir) = dirs::config_local_dir() {

@@ -264,6 +264,7 @@ Path             : {path:?}
 /// use meadows::tracing::config;
 ///
 /// fn main() -> anyhow::Result<()> {
+/// # fn run() -> anyhow::Result<()> {
 ///   // Call `try_init` in `main`, as early as possible, hold the result
 ///   let init_result = config::try_init(&config::Config::new(ExecType::Binary));
 ///   if let Err(err) = init_result {
@@ -271,7 +272,11 @@ Path             : {path:?}
 ///       process_error!("{:#}", anyhow::Error::from(err).context("Cannot initialize logging"))?;
 ///     }
 ///   }
-///
+/// #   Ok(())
+/// # }
+/// # #[cfg(not(miri))]
+/// # run();
+/// 
 ///   // ...
 ///
 ///   Ok(())
@@ -314,6 +319,7 @@ mod tests {
 
   // Functions ----------------------------------------------------------------------------------------------
 
+  #[cfg_attr(miri, ignore)]
   #[test]
   fn test_init_1() {
     set_up();
@@ -323,6 +329,7 @@ mod tests {
     }
   }
 
+  #[cfg_attr(miri, ignore)]
   #[test]
   fn test_init_2() {
     set_up();

@@ -12,6 +12,7 @@ use tracing::info;
 
 fn set_up() { config::init(&Config::new(ExecType::IntegTest)); }
 
+#[cfg_attr(miri, ignore)]
 #[test]
 fn test_tracing_config_init_1() {
   set_up();
@@ -21,6 +22,7 @@ fn test_tracing_config_init_1() {
   }
 }
 
+#[cfg_attr(miri, ignore)]
 #[test]
 fn test_tracing_config_init_2() {
   set_up();

@@ -7,6 +7,9 @@ COVERAGE_DIR := target/coverage
 
 nothing:
 
+bench:
+	@cargo +nightly bench
+
 coverage:
 	@rm -rf $(COVERAGE_DIR)
 	CARGO_INCREMENTAL=0 \
@@ -24,6 +27,12 @@ coverage:
 fmt-check:
 	@cargo +nightly fmt --check
 	
+miri-run:
+	@cargo +nightly miri run
+
+miri-test:
+	@cargo +nightly miri test
+
 test-doc:
 	@cargo test --doc -- --show-output
 
