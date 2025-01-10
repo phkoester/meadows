@@ -17,7 +17,7 @@ use crate::process::ExecType;
 
 // Macros ---------------------------------------------------------------------------------------------------
 
-/// The macro evaluates to [`io::Result<()>`].
+/// Evaluates to an [`io::Result<()>`].
 macro_rules! debug {
   ($is_debug:expr, $($arg:tt)+) => {{
     if $is_debug {
@@ -75,12 +75,12 @@ pub enum ConfigLevel {
   /// Configuration files at local level reside relative to system-dependent directories as returned by
   /// [`dirs::home_dir`] and [`dirs::config_local_dir`].
   Local,
-  /// Cargo-level configuration.
+  /// Package-level configuration.
   ///
-  /// Configuration files at Cargo level reside relative to the package's manifest directory. For those to be
-  /// found, the executable must be run via Cargo and the environment variable `CARGO_MANIFEST_DIR` must be
-  /// set.
-  Cargo,
+  /// Configuration files at package level reside relative to the package's manifest directory. For those to
+  /// be found, the executable must be run via Cargo and the environment variable `CARGO_MANIFEST_DIR` must
+  /// be set.
+  Package,
   /// Instance-level configuration.
   ///
   /// Configuration files at instance level reside relative to the current working directory or any of its
@@ -187,7 +187,7 @@ pub fn find_config_file(
 /// | `${config_local_dir}`  | A system-dependent directory as returned by [`dirs::config_local_dir`]
 /// | `${home_dir}`          | The user's home directory as returned by [`dirs::home_dir`], e.g. `/home/alice`
 /// | `${inv_dir}`           | The invocation directory as returned by [`inv_dir`]
-/// | `${manifest_dir}`      | The Cargo-manifest directory. This applies only if the executable is run via Cargo
+/// | `${manifest_dir}`      | The package's manifest directory. This applies only if the executable is run via Cargo
 /// | `${name}`              | `name`
 /// | `${path}`              | Each path from `paths`, which is separated by the system-dependent path separator. Each path may point to a file or directory. This applies only if `paths` is a [`Some`]
 /// | `${system_config_dir}` | A system-dependent directory as returned by [`system_config_dir`]
@@ -206,16 +206,16 @@ pub fn find_config_file(
 /// | [`Instance`]        | [`Binary`]                | `/home/.${name}/config.toml`
 /// | [`Instance`]        | [`Binary`]                | `/.${name}.config.toml`
 /// | [`Instance`]        | [`Binary`]                | `/.${name}/config.toml`
-/// | [`Cargo`]           | [`Binary`]                | `${manifest_dir}/src/${name}.config.toml`
-/// | [`Cargo`]           | [`Binary`]                | `${manifest_dir}/src/bin/${name}.config.toml`
-/// | [`Cargo`]           | [`Example`]               | `${manifest_dir}/examples/${name}.config.toml`
-/// | [`Cargo`]           | [`Example`]               | `${manifest_dir}/examples/config.toml`
-/// | [`Cargo`]           | [`DocTest`], [`UnitTest`] | `${manifest_dir}/src/${name}.config.toml`
-/// | [`Cargo`]           | [`DocTest`], [`UnitTest`] | `${manifest_dir}/src/config.toml`
-/// | [`Cargo`]           | [`IntegTest`]             | `${manifest_dir}/tests/${name}.config.toml`
-/// | [`Cargo`]           | [`IntegTest`]             | `${manifest_dir}/tests/config.toml`
-/// | [`Cargo`]           | [`BenchTest`]             | `${manifest_dir}/benches/${name}.config.toml`
-/// | [`Cargo`]           | [`BenchTest`]             | `${manifest_dir}/benches/config.toml`
+/// | [`Package`]         | [`Binary`]                | `${manifest_dir}/src/${name}.config.toml`
+/// | [`Package`]         | [`Binary`]                | `${manifest_dir}/src/bin/${name}.config.toml`
+/// | [`Package`]         | [`Example`]               | `${manifest_dir}/examples/${name}.config.toml`
+/// | [`Package`]         | [`Example`]               | `${manifest_dir}/examples/config.toml`
+/// | [`Package`]         | [`DocTest`], [`UnitTest`] | `${manifest_dir}/src/${name}.config.toml`
+/// | [`Package`]         | [`DocTest`], [`UnitTest`] | `${manifest_dir}/src/config.toml`
+/// | [`Package`]         | [`IntegTest`]             | `${manifest_dir}/tests/${name}.config.toml`
+/// | [`Package`]         | [`IntegTest`]             | `${manifest_dir}/tests/config.toml`
+/// | [`Package`]         | [`BenchTest`]             | `${manifest_dir}/benches/${name}.config.toml`
+/// | [`Package`]         | [`BenchTest`]             | `${manifest_dir}/benches/config.toml`
 /// | [`Local`]           | [`Binary`]                | `${home_dir}/.${name}.config.toml`
 /// | [`Local`]           | [`Binary`]                | `${home_dir}/.${name}/config.toml`
 /// | [`Local`]           | [`Binary`]                | `${config_local_dir}/${name}/config.toml`
@@ -275,7 +275,7 @@ pub fn find_config_file(
 ///
 /// [`Path`]: ConfigLevel::Path
 /// [`Instance`]: ConfigLevel::Instance
-/// [`Cargo`]: ConfigLevel::Cargo
+/// [`Package`]: ConfigLevel::Package
 /// [`Local`]: ConfigLevel::Local
 /// [`User`]: ConfigLevel::User
 /// [`System`]: ConfigLevel::System
@@ -400,29 +400,29 @@ fn find_config_files_impl(
     }
   }
 
-  // Level `Cargo`
+  // Level `Package`
   let manifest_dir = env::var_os("CARGO_MANIFEST_DIR").map(PathBuf::from);
   if let Some(dir) = manifest_dir {
     match exec_type {
       Binary => {
-        add!(Cargo, dir.join("src").join(&file_name));
-        add!(Cargo, dir.join("src").join("bin").join(&file_name));
+        add!(Package, dir.join("src").join(&file_name));
+        add!(Package, dir.join("src").join("bin").join(&file_name));
       }
       Example => {
-        add!(Cargo, dir.join("examples").join(&file_name));
-        add!(Cargo, dir.join("examples").join(&bare_file_name));
+        add!(Package, dir.join("examples").join(&file_name));
+        add!(Package, dir.join("examples").join(&bare_file_name));
       }
       DocTest | UnitTest => {
-        add!(Cargo, dir.join("src").join(&file_name));
-        add!(Cargo, dir.join("src").join(&bare_file_name));
+        add!(Package, dir.join("src").join(&file_name));
+        add!(Package, dir.join("src").join(&bare_file_name));
       }
       IntegTest => {
-        add!(Cargo, dir.join("tests").join(&file_name));
-        add!(Cargo, dir.join("tests").join(&bare_file_name));
+        add!(Package, dir.join("tests").join(&file_name));
+        add!(Package, dir.join("tests").join(&bare_file_name));
       }
       BenchTest => {
-        add!(Cargo, dir.join("benches").join(&file_name));
-        add!(Cargo, dir.join("benches").join(&bare_file_name));
+        add!(Package, dir.join("benches").join(&file_name));
+        add!(Package, dir.join("benches").join(&bare_file_name));
       }
     }
   }

@@ -6,17 +6,15 @@
 
 /// Prints the process invocation name, an `"Error"` label, and a message to `stderr`.
 ///
+/// The macro evaluates to a [`std::io::Result<()>`], just like [`writeln`] does.
+///
 /// **NOTE:** The macro requires the [`nu_ansi_term`] crate.
-///
-/// # Errors
-///
-/// The macro evaluates to [`std::io::Result<()>`].
 ///
 /// # Examples
 ///
 /// ```
 /// # #[macro_use] extern crate meadows;
-/// process_error!("Cannot start engine")?; // -> "{inv_name}: Error: Cannot start engine\n"
+/// process_error!("Cannot start engine")?; // -> "${inv_name}: Error: Cannot start engine\n"
 /// # Ok::<(), anyhow::Error>(())
 /// ```
 #[macro_export]
@@ -39,17 +37,15 @@ macro_rules! process_error {
 
 /// Prints the process invocation name and a message to , a `"Note"` label, and a message to `stdout`.
 ///
+/// The macro evaluates to a [`std::io::Result<()>`], just like [`writeln`] does.
+/// 
 /// **NOTE:** The macro requires the [`nu_ansi_term`] crate.
-///
-/// # Errors
-///
-/// The macro evaluates to [`std::io::Result<()>`].
 ///
 /// # Examples
 ///
 /// ```
 /// # #[macro_use] extern crate meadows;
-/// process_note!("Engine started")?; // -> "{inv_name}: Note: Engine started\n"
+/// process_note!("Engine started")?; // -> "${inv_name}: Note: Engine started\n"
 /// # Ok::<(), anyhow::Error>(())
 /// ```
 #[macro_export]
@@ -72,17 +68,15 @@ macro_rules! process_note {
 
 /// Prints the process invocation name, a `"Warning"` label, and a warning message to `stderr`.
 ///
+/// The macro evaluates to a [`std::io::Result<()>`], just like [`writeln`] does.
+/// 
 /// **NOTE:** The macro requires the [`nu_ansi_term`] crate.
-///
-/// # Errors
-///
-/// The macro evaluates to [`std::io::Result<()>`].
 ///
 /// # Examples
 ///
 /// ```
 /// # #[macro_use] extern crate meadows;
-/// process_warn!("Engine overheating")?; // -> "{inv_name}: Warning: Engine overheating\n"
+/// process_warn!("Engine overheating")?; // -> "${inv_name}: Warning: Engine overheating\n"
 /// # Ok::<(), anyhow::Error>(())
 /// ```
 #[macro_export]
