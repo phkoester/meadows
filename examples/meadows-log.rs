@@ -3,7 +3,7 @@
 //! An example program that shows how to set up `tracing` using [`meadows::tracing::config::init`].
 
 use std::io;
-use std::io::Write;
+use std::io::prelude::*;
 use std::process;
 
 use meadows::process::ExecType;
@@ -26,7 +26,7 @@ fn run() -> anyhow::Result<()> {
 
 // `main` ---------------------------------------------------------------------------------------------------
 
-fn main() -> io::Result<()> {
+fn main() -> anyhow::Result<()> {
   // Init logging
 
   config::init(&Config::new(ExecType::Example));

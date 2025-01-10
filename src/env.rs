@@ -6,11 +6,10 @@ use std::env;
 use std::ffi::OsStr;
 use std::ffi::OsString;
 use std::io;
-use std::io::Write;
+use std::io::prelude::*;
 use std::path::PathBuf;
 use std::sync::OnceLock;
 
-use anyhow::anyhow;
 use regex::Regex;
 
 // Functions ------------------------------------------------------------------------------------------------
@@ -25,20 +24,14 @@ pub fn dir() -> &'static PathBuf {
   static VAL: OnceLock<PathBuf> = OnceLock::new();
   VAL.get_or_init(|| {
     let path = path();
-    path
-      .parent()
-      .unwrap_or_else(|| {
-        let err = anyhow!("Cannot obtain parent of path {:?}", path);
-        panic!("{err:?}");
-      })
-      .to_owned()
+    path.parent().unwrap_or_else(|| panic!("Cannot obtain parent of path {path:?}")).to_owned()
   })
 }
 
 /// Prints the result of [`env::vars`] as key-value pairs to `stdout`.
-/// 
+///
 /// # Errors
-/// 
+///
 /// Returns a [`std::io::Error`] if an I/O error occurs.
 pub fn dump() -> io::Result<()> {
   for (name, val) in env::vars() {
@@ -48,9 +41,9 @@ pub fn dump() -> io::Result<()> {
 }
 
 /// Prints the result of [`env::vars_os`] as key-value pairs to `stdout`.
-/// 
+///
 /// # Errors
-/// 
+///
 /// Returns a [`std::io::Error`] if an I/O error occurs.
 pub fn dump_os() -> io::Result<()> {
   for (name, val) in env::vars_os() {
@@ -71,10 +64,7 @@ pub fn inv_dir() -> &'static PathBuf {
     let inv_path = inv_path();
     inv_path
       .parent()
-      .unwrap_or_else(|| {
-        let err = anyhow!("Cannot obtain parent of invocation path {:?}", inv_path);
-        panic!("{err:?}");
-      })
+      .unwrap_or_else(|| panic!("Cannot obtain parent of invocation path {inv_path:?}"))
       .to_owned()
   })
 }
@@ -140,9 +130,10 @@ pub fn path() -> &'static PathBuf {
   VAL.get_or_init(|| {
     let inv_path = inv_path();
     dunce::canonicalize(inv_path).unwrap_or_else(|err| {
-      let err =
-        anyhow::Error::from(err).context(format!("Cannot canonicalize invocation path {inv_path:?}"));
-      panic!("{err:?}")
+      panic!(
+        "{:?}",
+        anyhow::Error::from(err).context(format!("Cannot canonicalize invocation path {inv_path:?}"))
+      )
     })
   })
 }
@@ -159,7 +150,7 @@ pub fn path() -> &'static PathBuf {
 #[must_use]
 pub fn system_config_dir() -> Option<PathBuf> { system_config_dir_impl() }
 
-#[cfg(unix)]
+#[cfg(not(windows))]
 fn system_config_dir_impl() -> Option<PathBuf> {
   let ret = PathBuf::from("/etc");
   if ret.is_dir() {

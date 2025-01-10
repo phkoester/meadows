@@ -86,20 +86,31 @@ impl Config {
   }
 }
 
-// `InitError` ---------------------------------------------------------------------------------------------
+// `InitError` ----------------------------------------------------------------------------------------------
 
 /// Error type for [`init`]  and [`try_init`].
 #[derive(Debug, ThisError)]
 pub enum InitError {
   /// [`FindError`]
-  #[error("{0}")]
+  #[error("Cannot find configuration file")]
   Find(#[from] FindError),
   /// [`io::Error`].
-  #[error("{0}")]
+  #[error("I/O error")]
   Io(#[from] io::Error),
   /// [`TracingConfigError`].
-  #[error("{0}")]
+  #[error("Cannot configure `tracing`")]
   TracingConfig(#[from] TracingConfigError),
+}
+
+impl InitError {
+  /// Returns `true` if the error should be printed.
+  #[must_use]
+  pub fn should_print(&self) -> bool {
+    match self {
+      InitError::Find(err) => err.should_print(),
+      _ => true,
+    }
+  }
 }
 
 // Functions ------------------------------------------------------------------------------------------------
@@ -123,7 +134,7 @@ fn init_file(config: &Config, file: &Path) -> Result<ArcMutexGuard, InitError> {
   match tracing_config::config::init_config(config.is_debug, &tracing_config) {
     Ok(guard) => {
       if config.log_start {
-        info!("{}", start_message(config, file));
+        info!("\n{}", start_message(config, file));
       }
       Ok(guard)
     }
@@ -177,10 +188,7 @@ pub fn init(config: &Config) -> &'static ArcMutexGuard {
     assert!(config.exec_type != ExecType::Binary);
     match try_init_impl(config) {
       Ok(guard) => guard,
-      Err(err) => {
-        // XXX
-        panic!("Cannot initialize logging: {err}");
-      }
+      Err(err) => panic!("{:?}", anyhow::Error::from(err).context("Cannot initialize logging")),
     }
   })
 }
@@ -229,7 +237,8 @@ Path             : {path:?}
 ///
 /// This function should be called as early as possible on process startup. Its result contains a guard
 /// that must be held as long as possible, preferably until the end of `main`. If an error is returned, that
-/// error is typically printed, but the process should continue to run.
+/// error should be printed if [`InitError::should_print`]  returns `true, but the process should continue to
+/// run.
 ///
 /// For detailed information about the usage of the environment and the file search, see
 /// [`crate::config::find_config_file`].
@@ -238,9 +247,9 @@ Path             : {path:?}
 ///
 /// Returns [`Err`] with
 ///
-/// - XXX
-/// - [`crate::config::ConfigError`] if searching the configuration file fails;
-/// - [`tracing_config::TracingConfigError`] if the underlying initialization of [`tracing_config`] fails.
+/// - [`InitError::Find`] if a [`FindError`] occurs;
+/// - [`InitError::Io`] if an [`io::Error`] occurs;
+/// - [`InitError::TracingConfig`] if a [`TracingConfigError`] occurs.
 ///
 /// # Panics
 ///
@@ -249,21 +258,23 @@ Path             : {path:?}
 /// # Examples
 ///
 /// ```
-/// use meadows::config::ConfigError;
 /// use meadows::process_error;
 /// use meadows::process;
 /// use meadows::process::ExecType;
 /// use meadows::tracing::config;
 ///
-/// fn main() {
+/// fn main() -> anyhow::Result<()> {
 ///   // Call `try_init` in `main`, as early as possible, hold the result
-///   if let Err(err) = config::try_init(&config::Config::new(ExecType::Binary)) {
-///     if !matches!(err.downcast_ref::<ConfigError>(), Some(ConfigError::FileNotFound)) {
-///       process_error!("{:#}", err.context("Cannot initialize logging"));
+///   let init_result = config::try_init(&config::Config::new(ExecType::Binary));
+///   if let Err(err) = init_result {
+///     if err.should_print() {
+///       process_error!("{:#}", anyhow::Error::from(err).context("Cannot initialize logging"))?;
 ///     }
 ///   }
 ///
 ///   // ...
+///
+///   Ok(())
 /// }
 #[allow(clippy::needless_doctest_main)]
 pub fn try_init(config: &Config) -> Result<ArcMutexGuard, InitError> {
