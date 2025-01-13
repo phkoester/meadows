@@ -6,7 +6,7 @@
 #   https://docs.rs/tracing-config/latest/tracing_config/config/model/index.html
 #
 
-title = "Meadows `test_tracing_config` Integration Tests"
+title = "test_tracing_config"
 
 [filter.root]
 

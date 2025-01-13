@@ -6,7 +6,7 @@
 #   https://docs.rs/tracing-config/latest/tracing_config/config/model/index.html
 #
 
-title = "Roy `bench_log` Benchmark Tests"
+title = "bench_log"
 
 [filter.root]
 
