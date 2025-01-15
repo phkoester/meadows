@@ -4,96 +4,78 @@
 
 // Macros ---------------------------------------------------------------------------------------------------
 
-/// Prints the process invocation name, an `"Error"` label, and a message to `stderr`.
+/// Prints the process invocation name, an error label, and a message to a stream.
 ///
 /// The macro evaluates to a [`std::io::Result<()>`], just like [`writeln`] does.
 ///
-/// **NOTE:** The macro requires the [`nu_ansi_term`] crate.
+/// **NOTE:** The macro requires the crate [`owo-colors`].
 ///
 /// # Examples
 ///
 /// ```
 /// # #[macro_use] extern crate meadows;
-/// process_error!("Cannot start engine")?; // -> "${inv_name}: Error: Cannot start engine\n"
+/// let mut stderr = meadows::io::stderr().lock();
+/// process_error!(stderr, "Cannot start engine")?; // -> "${inv_name}: error: Cannot start engine\n"
 /// # Ok::<(), anyhow::Error>(())
 /// ```
 #[macro_export]
 macro_rules! process_error {
-  ($($arg:tt)+) => {{
-    use std::io::IsTerminal;
-    use std::io::prelude::*;
+  ($stream:expr, $($arg:tt)+) => {{
+    use ::std::io::prelude::*;
+    use ::owo_colors::OwoColorize;
 
     let name = $crate::env::inv_name().to_string_lossy();
-    let mut write = std::io::stderr();
-    let label = "Error";
-    if write.is_terminal() {
-      let label = nu_ansi_term::Color::Red.bold().paint(label);
-      writeln!(write, "{}: {}: {}", name, label, format_args!($($arg)+))
-    } else {
-      writeln!(write, "{}: {}: {}", name, label, format_args!($($arg)+))
-    }
+    writeln!($stream, "{}: {}{}", name, "error: ".bold().red(), format_args!($($arg)+))
   }};
 }
 
-/// Prints the process invocation name and a message to , a `"Note"` label, and a message to `stdout`.
+/// Prints the process invocation name and a message to , a note label, and a message to `stdout`.
 ///
 /// The macro evaluates to a [`std::io::Result<()>`], just like [`writeln`] does.
-/// 
-/// **NOTE:** The macro requires the [`nu_ansi_term`] crate.
+///
+/// **NOTE:** The macro requires the crate [`owo-colors`].
 ///
 /// # Examples
 ///
 /// ```
 /// # #[macro_use] extern crate meadows;
-/// process_note!("Engine started")?; // -> "${inv_name}: Note: Engine started\n"
+/// let mut stdout = meadows::io::stdout().lock();
+/// process_note!(stdout, "Engine started")?; // -> "${inv_name}: note: Engine started\n"
 /// # Ok::<(), anyhow::Error>(())
 /// ```
 #[macro_export]
 macro_rules! process_note {
-  ($($arg:tt)+) => {{
-    use std::io::IsTerminal;
-    use std::io::prelude::*;
+  ($stream:expr, $($arg:tt)+) => {{
+    use ::std::io::prelude::*;
+    use ::owo_colors::OwoColorize;
 
     let name = $crate::env::inv_name().to_string_lossy();
-    let mut write = std::io::stdout();
-    let label = "Note";
-    if write.is_terminal() {
-      let label = nu_ansi_term::Color::Green.bold().paint(label);
-      writeln!(write, "{}: {}: {}", name, label, format_args!($($arg)+))
-    } else {
-      writeln!(write, "{}: {}: {}", name, label, format_args!($($arg)+))
-    }
+    writeln!($stream, "{}: {}{}", name, "note: ".bold().green(), format_args!($($arg)+))
   }};
 }
 
-/// Prints the process invocation name, a `"Warning"` label, and a warning message to `stderr`.
+/// Prints the process invocation name, a warning label, and a message to `stderr`.
 ///
 /// The macro evaluates to a [`std::io::Result<()>`], just like [`writeln`] does.
-/// 
-/// **NOTE:** The macro requires the [`nu_ansi_term`] crate.
+///
+/// **NOTE:** The macro requires the crate [`owo-colors`].
 ///
 /// # Examples
 ///
 /// ```
 /// # #[macro_use] extern crate meadows;
-/// process_warn!("Engine overheating")?; // -> "${inv_name}: Warning: Engine overheating\n"
+/// let mut stderr = meadows::io::stderr().lock();
+/// process_warn!(stderr, "Engine overheating")?; // -> "${inv_name}: warning: Engine overheating\n"
 /// # Ok::<(), anyhow::Error>(())
 /// ```
 #[macro_export]
 macro_rules! process_warn {
-  ($($arg:tt)+) => {{
-    use std::io::IsTerminal;
-    use std::io::prelude::*;
+  ($stream:expr, $($arg:tt)+) => {{
+    use ::std::io::prelude::*;
+    use ::owo_colors::OwoColorize;
 
     let name = $crate::env::inv_name().to_string_lossy();
-    let mut write = std::io::stderr();
-    let label = "Warning";
-    if write.is_terminal() {
-      let label = nu_ansi_term::Color::Yellow.bold().paint(label);
-      writeln!(write, "{}: {}: {}", name, label, format_args!($($arg)+))
-    } else {
-      writeln!(write, "{}: {}: {}", name, label, format_args!($($arg)+))
-    }
+    writeln!($stream, "{}: {}{}", name, "warning: ".bold().yellow(), format_args!($($arg)+))
   }};
 }
 

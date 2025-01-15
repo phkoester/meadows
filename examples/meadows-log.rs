@@ -2,10 +2,10 @@
 
 //! An example program that shows how to set up `tracing` using [`meadows::tracing::config::init`].
 
-use std::io;
 use std::io::prelude::*;
 use std::process;
 
+use meadows::io;
 use meadows::process::ExecType;
 use meadows::process_error;
 use meadows::tracing::config;
@@ -34,7 +34,7 @@ fn main() -> anyhow::Result<()> {
   // Run
 
   if let Err(err) = run() {
-    process_error!("{err:#}")?;
+    process_error!(io::stdout(), "{err:#}")?;
     process::exit(1);
   }
   Ok(())

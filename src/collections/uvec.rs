@@ -13,7 +13,7 @@
 //! used as keys.
 //! 
 //! ```
-//! use meadows::collection::Uvec;
+//! use meadows::collections::Uvec;
 //! 
 //! let mut uvec = Uvec::new();
 //! assert_eq!(uvec.push("hello"), true);
@@ -26,7 +26,7 @@
 //! ```
 //! # fn run() {
 //! use std::path::PathBuf;
-//! use meadows::collection::Uvec;
+//! use meadows::collections::Uvec;
 //! 
 //! // If canonicalizing fails, no key is generated
 //! let mut uvec = Uvec::with_key(&|val: &PathBuf| dunce::canonicalize(val).ok());
@@ -54,7 +54,7 @@ use std::slice::SliceIndex;
 
 /// A [`Uvec`] behaves very much like a [`Vec`], but it can only contain unique elements.
 ///
-/// For some basic examples, see [the module documentation](crate::collection::uvec).
+/// For some basic examples, see [the module documentation](crate::collections::uvec).
 #[derive(Clone)]
 pub struct Uvec<'a, K, V> {
   set: HashSet<K>,
@@ -88,7 +88,7 @@ where
   /// # Examples
   ///
   /// ```
-  /// use meadows::collection::Uvec;
+  /// use meadows::collections::Uvec;
   ///
   /// let mut uvec = Uvec::new();
   /// uvec.insert(0, 3);
@@ -125,7 +125,7 @@ where
   /// # Examples
   ///
   /// ```
-  /// use meadows::collection::Uvec;
+  /// use meadows::collections::Uvec;
   ///
   /// let mut uvec = Uvec::from([1, 2, 3, 2, 1]);
   /// assert_eq!(uvec.pop(), Some(3));
@@ -182,7 +182,7 @@ where
   /// # fn run() {
   /// use std::path::PathBuf;
   ///
-  /// use meadows::collection::Uvec;
+  /// use meadows::collections::Uvec;
   ///
   /// // If canonicalizing fails, no key is generated
   /// let mut uvec = Uvec::with_key(&|val: &PathBuf| dunce::canonicalize(val).ok());
@@ -211,7 +211,7 @@ where
   /// # Examples
   ///
   /// ```
-  /// use meadows::collection::Uvec;
+  /// use meadows::collections::Uvec;
   ///
   /// let mut uvec = Uvec::new();
   /// uvec.push(42);
@@ -220,7 +220,7 @@ where
   /// This is equivalent to
   ///
   /// ```
-  /// use meadows::collection::Uvec;
+  /// use meadows::collections::Uvec;
   ///
   /// let mut uvec = Uvec::with_key(&|val: &i32| Some(val.clone()));
   /// uvec.push(42);

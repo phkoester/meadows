@@ -8,6 +8,22 @@
 //!
 //! - `tracing_config` - When enabled, the `crate::tracing::config` module is available. This is **disabled
 //!   by default.**
+//!
+//! ## Logging
+//!
+//! Internally, Meadows uses the [`tracing`](::tracing) crate for logging.
+//!
+//! ## Colored Terminal Output
+//!
+//! For styled/colored output, Meadows uses [`anstream::stdout`] and [`anstream::stderr`], which in turn
+//! call [`anstream::AutoStream::choice`] to configure the streams. The following envionment variables
+//! are read:
+//!
+//! | Environment Variable | Description
+//! | :------------------- | :-----------
+//! | `CLICOLOR`           | Set it to `0` to disable colored output
+//! | `CLICOLOR_FORCE`     | Set it to `1` to enforce colored output. This overrides `CLICOLOR`
+//! | `NO_COLOR`           | Set it to `1` to disable colored output. This overrides `CLICOLOR_FORCE`
 
 // Constants ------------------------------------------------------------------------------------------------
 
@@ -22,7 +38,7 @@ pub const VERSION: &str = env!("CARGO_PKG_VERSION");
 
 // Modules --------------------------------------------------------------------------------------------------
 
-pub mod collection;
+pub mod collections;
 pub mod config;
 pub mod env;
 pub mod io;

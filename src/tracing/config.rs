@@ -126,7 +126,7 @@ fn init_file(config: &Config, file: &Path) -> Result<ArcMutexGuard, InitError> {
     tracing_config::config::read_config(file, tracing_config::config::RESOLVE_FROM_ENV_DEPTH)?;
 
   if config.print_path {
-    process_note!("Loaded configuration file `{}` titled `{}`", file.display(), tracing_config.title)?;
+    process_note!(crate::io::stdout(), "Loaded configuration file `{}` titled `{}`", file.display(), tracing_config.title)?;
   }
 
   // Apply configuration
@@ -258,6 +258,7 @@ Path             : {path:?}
 /// # Examples
 ///
 /// ```
+/// use meadows::io;
 /// use meadows::process_error;
 /// use meadows::process;
 /// use meadows::process::ExecType;
@@ -269,14 +270,15 @@ Path             : {path:?}
 ///   let init_result = config::try_init(&config::Config::new(ExecType::Binary));
 ///   if let Err(err) = init_result {
 ///     if err.should_print() {
-///       process_error!("{:#}", anyhow::Error::from(err).context("Cannot initialize logging"))?;
+///       let mut stderr = io::stderr().lock();
+///       process_error!(stderr, "{:#}", anyhow::Error::from(err).context("Cannot initialize logging"))?;
 ///     }
 ///   }
 /// #   Ok(())
 /// # }
 /// # #[cfg(not(miri))]
 /// # run();
-/// 
+///
 ///   // ...
 ///
 ///   Ok(())

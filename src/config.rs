@@ -3,32 +3,38 @@
 //! Configuration-related utilities.
 
 use std::env;
-use std::ffi::OsStr;
 use std::io;
+use std::ffi::OsStr;
 use std::io::prelude::*;
+use std::io::StdoutLock;
 use std::path::PathBuf;
 use std::process;
 use std::sync::OnceLock;
 
+use anstream::AutoStream;
 use thiserror::Error as ThisError;
 
-use crate::collection::Uvec;
+use crate::collections::Uvec;
 use crate::process::ExecType;
 
 // Macros ---------------------------------------------------------------------------------------------------
 
 /// Evaluates to an [`io::Result<()>`].
 macro_rules! debug {
-  ($is_debug:expr, $($arg:tt)+) => {{
-    if $is_debug {
-      writeln!(io::stdout(), "[meadows::config] {}", format_args!($($arg)+))
+  ($stream:expr, $($arg:tt)+) => {{
+    if let Some(stream) = $stream {
+      writeln!(stream, "[meadows::config] {}", format_args!($($arg)+))
     } else {
       Ok(())
     }
   }}
 }
 
-// `FindError` ---------------------------------------------------------------------------------------------
+// Types ----------------------------------------------------------------------------------------------------
+
+type AutoStreamStdoutLock = AutoStream<StdoutLock<'static>>;
+
+// `FindError` ----------------------------------------------------------------------------------------------
 
 /// Error type for the `find` functions.
 #[derive(Debug, ThisError)]
@@ -312,7 +318,10 @@ fn find_config_files_impl(
 
   // Some introductory debug info
 
-  debug!(is_debug, "Checking paths for {} executable", match exec_type {
+  let mut stdout = if is_debug { Some(crate::io::stdout().lock()) } else { None };
+  let stdout = &mut stdout;
+
+  debug!(stdout, "Checking paths for {} executable", match exec_type {
     Binary => "binary",
     Example => "example",
     DocTest => "doc-test",
@@ -321,7 +330,7 @@ fn find_config_files_impl(
     BenchTest => "benchmark-test",
   })?;
 
-  debug!(is_debug, "Current directory: {}", {
+  debug!(stdout, "Current directory: {}", {
     match env::current_dir() {
       Ok(dir) => format!("{dir:?}"),
       Err(_) => String::from("-"),
@@ -331,7 +340,7 @@ fn find_config_files_impl(
   // If requested, set env vars. This is executed only once
 
   if set_env_vars {
-    self::set_env_vars(exec_type, is_debug)?;
+    self::set_env_vars(stdout, exec_type)?;
   }
 
   // Define a few names and relative paths
@@ -359,7 +368,7 @@ fn find_config_files_impl(
       if is_debug {
         let level_str = format!("{level:?}");
         let bullet = if path.is_file() { "*" } else { "" };
-        debug!(is_debug, "{level_str:<10} | {bullet:<1} {path:?}")?;
+        debug!(stdout, "{level_str:<10} | {bullet:<1} {path:?}")?;
         // In debug mode, we don't return quickly
         Ok(None)
       } else if find_one && path.is_file() {
@@ -487,17 +496,17 @@ fn replace_in_pattern(pattern: &str, to: &str) -> Result<String, FindError> {
 
 /// Defines a few general-purpose environment variables that may be used from within configuration files.
 /// This calls [`set_env_vars_impl`] exactly once per process.
-fn set_env_vars(exec_type: ExecType, is_debug: bool) -> io::Result<()> {
+fn set_env_vars(stdout: &mut Option<AutoStreamStdoutLock>, exec_type: ExecType) -> io::Result<()> {
   static VAL: OnceLock<io::Result<()>> = OnceLock::new();
-  match VAL.get_or_init(|| set_env_vars_impl(exec_type, is_debug)) {
+  match VAL.get_or_init(|| set_env_vars_impl(stdout, exec_type)) {
     Ok(()) => Ok(()),
     Err(err) => Err(io::Error::new(err.kind(), err.to_string())),
   }
 }
 
-fn set_env_vars_impl(exec_type: ExecType, is_debug: bool) -> io::Result<()> {
-  let set_env_var = |name: &str, val: &OsStr| -> io::Result<()> {
-    debug!(is_debug, "Setting `{name}` to {val:?}")?;
+fn set_env_vars_impl(stdout: &mut Option<AutoStreamStdoutLock>, exec_type: ExecType) -> io::Result<()> {
+  let mut set_env_var = |name: &str, val: &OsStr| -> io::Result<()> {
+    debug!(stdout, "Setting `{name}` to {val:?}")?;
     env::set_var(name, val);
     Ok(())
   };
