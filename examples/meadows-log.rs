@@ -20,7 +20,6 @@ fn run() -> anyhow::Result<()> {
   let mut stdout = io::stdout();
   writeln!(stdout, "This is meadows-log")?;
   info!("A log message");
-  writeln!(stdout, "Done.")?;
   Ok(())
 }
 

@@ -25,11 +25,11 @@ macro_rules! process_error {
     use ::owo_colors::OwoColorize;
 
     let name = $crate::env::inv_name().to_string_lossy();
-    writeln!($stream, "{}: {}{}", name, "error: ".bold().red(), format_args!($($arg)+))
+    writeln!($stream, "{}: {}: {}", name, "error".bold().red(), format_args!($($arg)+))
   }};
 }
 
-/// Prints the process invocation name and a message to , a note label, and a message to `stdout`.
+/// Prints the process invocation name and a message to , a note label, and a message to a stream.
 ///
 /// The macro evaluates to a [`std::io::Result<()>`], just like [`writeln`] does.
 ///
@@ -50,11 +50,11 @@ macro_rules! process_note {
     use ::owo_colors::OwoColorize;
 
     let name = $crate::env::inv_name().to_string_lossy();
-    writeln!($stream, "{}: {}{}", name, "note: ".bold().green(), format_args!($($arg)+))
+    writeln!($stream, "{}: {}: {}", name, "note".bold().green(), format_args!($($arg)+))
   }};
 }
 
-/// Prints the process invocation name, a warning label, and a message to `stderr`.
+/// Prints the process invocation name, a warning label, and a message to a stream.
 ///
 /// The macro evaluates to a [`std::io::Result<()>`], just like [`writeln`] does.
 ///
@@ -75,7 +75,7 @@ macro_rules! process_warn {
     use ::owo_colors::OwoColorize;
 
     let name = $crate::env::inv_name().to_string_lossy();
-    writeln!($stream, "{}: {}{}", name, "warning: ".bold().yellow(), format_args!($($arg)+))
+    writeln!($stream, "{}: {}: {}", name, "warning".bold().yellow(), format_args!($($arg)+))
   }};
 }
 
