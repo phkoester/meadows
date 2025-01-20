@@ -239,9 +239,9 @@ pub fn find_config_file(
 ///
 /// Returns [`Err`] with
 ///
-/// - [`FindError::FileNotFound`] if a configuration file cannot be found;
-/// - [`FindError::InvalidFileNamePattern`] if `file_name_pattern` does not contain `"{}"`;
-/// - [`FindError::Io`] if an [`io::Error`] occurs.
+/// - [`FindError::FileNotFound`] if a configuration file cannot be found
+/// - [`FindError::InvalidFileNamePattern`] if `file_name_pattern` does not contain `"{}"`
+/// - [`FindError::Io`] if an [`io::Error`] occurs
 ///
 /// # Examples
 ///

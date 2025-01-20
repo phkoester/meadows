@@ -52,7 +52,7 @@ impl Config {
   ///
   /// | Field        | Default Value
   /// | :----------- | :------------
-  /// | `is_debug`   | `true` if environment variable `tracing_config_debug` is set to to `"true"`, `otherwise `false`
+  /// | `is_debug`   | `true` if environment variable `tracing_config_debug` is set to to `"true"`
   /// | `log_start`  | `true`
   /// | `name`       | Depends on `exec_type`
   /// | `paths`      | The value of the environment variable `tracing_config`, otherwise [`None`]
@@ -196,7 +196,7 @@ pub fn init(config: &Config) -> &'static ArcMutexGuard {
 fn start_message(config: &Config, config_path: &Path) -> String {
   let mut ret = String::new();
 
-  // "Process started"
+  // `Process started`
 
   let inv_name = crate::env::inv_name().to_string_lossy();
   let current_dir_str = match env::current_dir() {
@@ -229,7 +229,7 @@ Path             : {path:?}
     }
   }
 
-  ret.pop(); // Strip trailing '\n'
+  ret.pop(); // Strip trailing `\n`
   ret.fence('#', config.text_width)
 }
 
