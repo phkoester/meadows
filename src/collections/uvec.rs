@@ -403,8 +403,8 @@ mod tests {
     assert!(uvec.push(1));
     assert!(uvec.push(2));
     assert!(uvec.push(3));
-    assert!(uvec.push(2));
-    assert!(uvec.push(1));
+    assert!(!uvec.push(2));
+    assert!(!uvec.push(1));
 
     assert_eq!(uvec.set, HashSet::from([1, 2, 3]));
     assert_eq!(uvec.vec, vec![1, 2, 3]);
@@ -416,8 +416,8 @@ mod tests {
     assert!(uvec.push(1));
     assert!(uvec.push(2));
     assert!(uvec.push(3));
-    assert!(uvec.push(2));
-    assert!(uvec.push(1));
+    assert!(!uvec.push(2));
+    assert!(!uvec.push(1));
 
     assert_eq!(uvec.set, HashSet::from(["1".to_string(), "2".to_string(), "3".to_string()]));
     assert_eq!(uvec.vec, vec![1, 2, 3]);
