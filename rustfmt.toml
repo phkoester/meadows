@@ -26,7 +26,9 @@ normalize_comments = true
 normalize_doc_attributes = true
 overflow_delimited_expr = true
 reorder_impl_items = true
-skip_macro_invocations = ["dbg", "format", "println", "process_error", "process_note", "process_warn"]
+skip_macro_invocations = [
+  "dbg", "format", "print", "println", "process_error", "process_note", "process_warn", "write", "writeln"
+]
 tab_spaces = 2
 unstable_features = true
 use_field_init_shorthand = true

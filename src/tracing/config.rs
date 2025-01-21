@@ -237,8 +237,8 @@ Path             : {path:?}
 ///
 /// This function should be called as early as possible on process startup. Its result contains a guard
 /// that must be held as long as possible, preferably until the end of `main`. If an error is returned, that
-/// error should be printed if [`InitError::should_print`]  returns `true, but the process should continue to
-/// run.
+/// error should be printed if [`InitError::should_print`]  returns `true`, but the process should continue
+/// to run.
 ///
 /// For detailed information about the usage of the environment and the file search, see
 /// [`crate::config::find_config_file`].

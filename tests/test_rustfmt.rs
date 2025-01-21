@@ -1,6 +1,6 @@
 // test_rustfmt.rs
 
-#![allow(missing_docs)]
+#![allow(missing_docs, clippy::must_use_candidate, clippy::needless_bool)]
 
 //! Code snippets testing the current Rustfmt configuration.
 //!
@@ -108,7 +108,7 @@ pub const I: i32 = 0xabcd;
 // skip_macro_invocations
 
 pub fn g() {
-  let _ = format!( "{}{}{}{}{}{}{}{}", 1_000_000, 1_000_000, 1_000_000, 1_000_000, 1_000_000, 1_000_000, 1_000_000, 1_000_000);
+  let _ = format!("{}{}{}{}{}{}{}{}", 1_000_000, 1_000_000, 1_000_000, 1_000_000, 1_000_000, 1_000_000, 1_000_000, 1_000_000);
 }
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]

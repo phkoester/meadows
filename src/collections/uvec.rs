@@ -400,11 +400,11 @@ mod tests {
   #[test]
   fn test_uvec_new() {
     let mut uvec = Uvec::new();
-    assert_eq!(uvec.push(1), true);
-    assert_eq!(uvec.push(2), true);
-    assert_eq!(uvec.push(3), true);
-    assert_eq!(uvec.push(2), false);
-    assert_eq!(uvec.push(1), false);
+    assert!(uvec.push(1));
+    assert!(uvec.push(2));
+    assert!(uvec.push(3));
+    assert!(uvec.push(2));
+    assert!(uvec.push(1));
 
     assert_eq!(uvec.set, HashSet::from([1, 2, 3]));
     assert_eq!(uvec.vec, vec![1, 2, 3]);
@@ -413,11 +413,11 @@ mod tests {
   #[test]
   fn test_uvec_with_key_to_string() {
     let mut uvec = Uvec::with_key(&|val: &i32| Some(val.to_string()));
-    assert_eq!(uvec.push(1), true);
-    assert_eq!(uvec.push(2), true);
-    assert_eq!(uvec.push(3), true);
-    assert_eq!(uvec.push(2), false);
-    assert_eq!(uvec.push(1), false);
+    assert!(uvec.push(1));
+    assert!(uvec.push(2));
+    assert!(uvec.push(3));
+    assert!(uvec.push(2));
+    assert!(uvec.push(1));
 
     assert_eq!(uvec.set, HashSet::from(["1".to_string(), "2".to_string(), "3".to_string()]));
     assert_eq!(uvec.vec, vec![1, 2, 3]);
@@ -431,10 +431,10 @@ mod tests {
 
     // Use `unwrap` in the key function to ensure canonicalizing succeeds
     let mut uvec = Uvec::with_key(&|val: &PathBuf| Some(dunce::canonicalize(val).unwrap()));
-    assert_eq!(uvec.push(PathBuf::from(".")), true);
+    assert!(uvec.push(PathBuf::from(".")));
     // `../dir_name` must be equivalent to `.`
-    assert_eq!(uvec.push(PathBuf::from(format!("../{}", dir_name))), false);
-    assert_eq!(uvec.push(PathBuf::from("..")), true);
+    assert!(!uvec.push(PathBuf::from(format!("../{}", dir_name))));
+    assert!(uvec.push(PathBuf::from("..")));
 
     assert_eq!(uvec.set.len(), 2);
     assert_eq!(uvec.vec, vec![PathBuf::from("."), PathBuf::from("..")]);
@@ -463,7 +463,7 @@ mod tests {
   #[test]
   fn test_deref_for_uvec() {
     let uvec = Uvec::from([1, 2, 3, 2, 1]);
-    let other: &[i32] = &*uvec;
+    let other: &[i32] = &uvec;
     assert_eq!(other, &[1, 2, 3]);
   }
 
@@ -480,6 +480,7 @@ mod tests {
     assert_eq!(uvec[0..3], [1, 2, 3]);
   }
 
+  #[allow(clippy::explicit_counter_loop)]
   #[test]
   fn test_into_iter_for_uvec() {
     let uvec = Uvec::from([1, 2, 3, 2, 1]);
@@ -495,6 +496,7 @@ mod tests {
     }
   }
 
+  #[allow(clippy::explicit_counter_loop)]
   #[test]
   fn test_into_iter_for_ref_uvec() {
     let uvec = Uvec::from([1, 2, 3, 2, 1]);

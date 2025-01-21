@@ -10,6 +10,9 @@ nothing:
 bench:
 	@cargo +nightly bench
 
+clippy:
+	@cargo +nightly clippy --all-features --all-targets
+
 coverage:
 	@rm -rf $(COVERAGE_DIR)
 	CARGO_INCREMENTAL=0 \

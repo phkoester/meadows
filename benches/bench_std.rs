@@ -26,13 +26,13 @@ mod tests {
   use super::*;
 
   #[bench]
-  fn bench_str_to_owned(b: &mut Bencher) { b.iter(|| format!("{}", use_str_to_owned("hello"))); }
+  fn bench_str_to_owned(b: &mut Bencher) { b.iter(|| use_str_to_owned("hello")); }
 
   #[bench]
-  fn bench_str_to_string(b: &mut Bencher) { b.iter(|| format!("{}", use_str_to_string("hello"))); }
+  fn bench_str_to_string(b: &mut Bencher) { b.iter(|| use_str_to_string("hello")); }
 
   #[bench]
-  fn bench_string_from(b: &mut Bencher) { b.iter(|| format!("{}", use_string_from("hello"))); }
+  fn bench_string_from(b: &mut Bencher) { b.iter(|| use_string_from("hello")); }
 }
 
 // EOF

@@ -204,7 +204,7 @@ mod tests {
   use super::*;
 
   // Functions ----------------------------------------------------------------------------------------------
-
+  
   #[test]
   fn test_test_name_impl() {
     assert_eq!(test_name_impl(OsStr::new("rust_out")), "rust_out");

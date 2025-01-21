@@ -3,8 +3,8 @@
 //! Configuration-related utilities.
 
 use std::env;
-use std::io;
 use std::ffi::OsStr;
+use std::io;
 use std::io::prelude::*;
 use std::io::StdoutLock;
 use std::path::PathBuf;

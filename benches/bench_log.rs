@@ -18,7 +18,7 @@ fn set_up() {
     // Initialize `tracing`
     config::init(&Config { log_start: false, ..Config::new(ExecType::BenchTest) });
     // Initialize `log`
-    tracing_log::LogTracer::init().unwrap()
+    tracing_log::LogTracer::init().unwrap();
   });
 }
 
@@ -35,13 +35,13 @@ mod tests {
   #[bench]
   fn bench_log_info(b: &mut Bencher) {
     set_up();
-    b.iter(|| log::info!("message"))
+    b.iter(|| log::info!("message"));
   }
 
   #[bench]
   fn bench_tracing_info(b: &mut Bencher) {
     set_up();
-    b.iter(|| tracing::info!("message"))
+    b.iter(|| tracing::info!("message"));
   }
 }
 

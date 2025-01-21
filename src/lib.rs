@@ -29,8 +29,8 @@
 
 /// A general formatting hint.
 ///
-/// This may be the assumed column width of a terminal or editor. Lines may be wrapped if they exceed
-/// `TEXT_WIDTH` - 1 columns.
+/// This may be the assumed minimum column width of a terminal or editor, including line breaks. Lines may be
+/// wrapped if they exceed `TEXT_WIDTH` - 1 columns.
 pub const TEXT_WIDTH: usize = 110;
 
 /// The crate version.
