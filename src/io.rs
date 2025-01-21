@@ -20,14 +20,14 @@ where
 }
 
 /// Returns a configured ANSI-aware stream for `stderr`.
-/// 
+///
 /// See [`anstream::stderr`].
 #[inline]
 #[must_use]
 pub fn stderr() -> anstream::Stderr { anstream::stderr() }
 
 /// Returns a configured ANSI-aware stream for `stdout`.
-/// 
+///
 /// See [`anstream::stdout`].
 #[inline]
 #[must_use]

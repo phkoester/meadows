@@ -11,10 +11,10 @@
 //! If the types `K` and `V` are identical, a [`Uvec`] may be created using the [`new`] function. In this
 //! case, the key-generating function is automatically supplied and simply clones the values so they can be
 //! used as keys.
-//! 
+//!
 //! ```
 //! use meadows::collections::Uvec;
-//! 
+//!
 //! let mut uvec = Uvec::new();
 //! assert_eq!(uvec.push("hello"), true);
 //! assert_eq!(uvec.push("hello"), false); // Duplicate value: inserting fails
@@ -26,8 +26,9 @@
 //! ```
 //! # fn run() {
 //! use std::path::PathBuf;
+//!
 //! use meadows::collections::Uvec;
-//! 
+//!
 //! // If canonicalizing fails, no key is generated
 //! let mut uvec = Uvec::with_key(&|val: &PathBuf| dunce::canonicalize(val).ok());
 //! assert_eq!(uvec.push(PathBuf::from("beetlejuice")), false); // Path does not exist: inserting fails

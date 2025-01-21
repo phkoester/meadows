@@ -36,6 +36,11 @@ miri-run:
 miri-test:
 	@cargo +nightly miri test
 
+# Pre-publish actions. All should be well: No warnings, etc.
+publish: fmt-check clippy
+	@cargo test
+	@cargo doc
+
 test-doc:
 	@cargo test --doc -- --show-output
 

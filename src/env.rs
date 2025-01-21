@@ -32,7 +32,7 @@ pub fn dir() -> &'static PathBuf {
 ///
 /// # Errors
 ///
-/// Returns a [`std::io::Error`] if an I/O error occurs.
+/// Returns [`Err`] with [`std::io::Error`] if an I/O error occurs.
 pub fn dump() -> io::Result<()> {
   for (name, val) in env::vars() {
     writeln!(io::stdout(), "{name}={val}")?;
@@ -44,7 +44,7 @@ pub fn dump() -> io::Result<()> {
 ///
 /// # Errors
 ///
-/// Returns a [`std::io::Error`] if an I/O error occurs.
+/// Returns [`Err`] with [`std::io::Error`] if an I/O error occurs.
 pub fn dump_os() -> io::Result<()> {
   for (name, val) in env::vars_os() {
     writeln!(io::stdout(), "{name:?}={val:?}")?;
@@ -204,7 +204,7 @@ mod tests {
   use super::*;
 
   // Functions ----------------------------------------------------------------------------------------------
-  
+
   #[test]
   fn test_test_name_impl() {
     assert_eq!(test_name_impl(OsStr::new("rust_out")), "rust_out");

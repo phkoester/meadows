@@ -247,9 +247,9 @@ Path             : {path:?}
 ///
 /// Returns [`Err`] with
 ///
-/// - [`InitError::Find`] if a [`FindError`] occurs;
-/// - [`InitError::Io`] if an [`io::Error`] occurs;
-/// - [`InitError::TracingConfig`] if a [`TracingConfigError`] occurs.
+/// - [`InitError::Find`] if a [`FindError`] occurs
+/// - [`InitError::Io`] if an [`io::Error`] occurs
+/// - [`InitError::TracingConfig`] if a [`TracingConfigError`] occurs
 ///
 /// # Panics
 ///
