@@ -1,6 +1,12 @@
+/*
+ * project.json
+ */
+
 {
   "dependencies": [
     "gaia"
   ],
   "version": "@Cargo.toml"
 }
+
+// EOF
