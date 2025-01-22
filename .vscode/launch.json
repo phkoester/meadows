@@ -15,8 +15,8 @@
       "cwd": "${workspaceRoot}",
       "sourceMap": [
         [
-          "${env:GAIA_RUSTC_TOOLCHAIN}/library/",
-          "${env:GAIA_USER_DIR}/.rustup/toolchains/${env:GAIA_RUSTUP_TOOLCHAIN}/lib/rustlib/src/rust/library/"
+          "${env:GAIA_RUSTC_ID}/library/",
+          "${env:GAIA_USER_DIR}/.rustup/toolchains/${env:GAIA_RUSTC_TARGET}/lib/rustlib/src/rust/library/"
         ]
       ]
     },

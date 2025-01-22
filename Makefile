@@ -27,6 +27,9 @@ coverage:
 	@rm -rfv $(BIN_DIR)/src_*_rs_*
 	@echo Created $(COVERAGE_DIR)/html/index.html
 
+doc:
+	@cargo doc --all-features
+
 fmt-check:
 	@cargo +nightly fmt --check
 	
@@ -37,9 +40,8 @@ miri-test:
 	@cargo +nightly miri test
 
 # Pre-publish actions. All should be well: No warnings, etc.
-publish: fmt-check clippy
+publish: fmt-check clippy doc
 	@cargo test
-	@cargo doc
 
 test-doc:
 	@cargo test --doc -- --show-output
