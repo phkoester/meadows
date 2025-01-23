@@ -201,13 +201,12 @@ fn start_message(config: &Config, config_path: &Path) -> String {
   let inv_name = crate::env::inv_name().to_string_lossy();
   let current_dir_str = match env::current_dir() {
     Ok(dir) => format!("{dir:?}"),
-    Err(_) => String::from("-"),
+    Err(_) => String::from("N/A"),
   };
   let inv_path = crate::env::inv_path();
   let path = crate::env::path();
 
-  ret.push_str(&format!(
-        "\
+  ret.push_str(&format!("\
 Process started: {inv_name}
 
 Log-configuration file: {config_path:?}
@@ -215,8 +214,7 @@ Log-configuration file: {config_path:?}
 Current directory: {current_dir_str}
 Invocation path  : {inv_path:?}
 Path             : {path:?}
-"
-    ));
+"));
 
   // Arguments, if any
 

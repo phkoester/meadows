@@ -4,8 +4,8 @@
 
 //! Code snippets testing the current Rustfmt configuration.
 //!
-//! The sources in this file are not supposed to run or actually test anything except how they are formatted
-//! by Rustfmt.
+//! The code in this file is not supposed to run or actually test anything except how it is formatted by
+//! Rustfmt.
 
 // imports_granularity
 
@@ -65,15 +65,15 @@ pub fn some_function() {
 
   // binop_separator, max_width
 
-  let _ = 1_000_000 +
-    1_000_000 +
-    1_000_000 +
-    1_000_000 +
-    1_000_000 +
-    1_000_000 +
-    1_000_000 +
-    1_000_000 +
-    1_000_000;
+  let _ = 1_000_000
+    + 1_000_000
+    + 1_000_000
+    + 1_000_000
+    + 1_000_000
+    + 1_000_000
+    + 1_000_000
+    + 1_000_000
+    + 1_000_000;
 
   #[rustfmt::skip]
   let _ = 1_000_000 + 1_000_000 + 1_000_000 + 1_000_000 + 1_000_000 + 1_000_000 + 1_000_000 + 1_000_000 + 1_000_000;

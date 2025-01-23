@@ -4,7 +4,6 @@
 # Documentation: https://rust-lang.github.io/rustfmt/
 #
 
-binop_separator = "Back"
 blank_lines_upper_bound = 1
 brace_style = "PreferSameLine"
 comment_width = 109
@@ -27,7 +26,8 @@ normalize_doc_attributes = true
 overflow_delimited_expr = true
 reorder_impl_items = true
 skip_macro_invocations = [
-  "dbg", "format", "print", "println", "process_error", "process_note", "process_warn", "write", "writeln"
+  "dbg", "eprint", "eprintln", "format", "print", "println", "process_error", "process_note", "process_warn",
+  "write", "writeln"
 ]
 tab_spaces = 2
 unstable_features = true
