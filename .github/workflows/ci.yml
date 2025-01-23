@@ -25,9 +25,13 @@ jobs:
         components: clippy
     - name: Build
       run: cargo build --verbose
-    - name: Run Clippy
+    # Run "Clippy" on Ubuntu only---one platform is enough 
+    - name: Clippy
       run: cargo +nightly clippy --all-targets --all-features
-    - name: Run tests
+    # Run "Doc" on Ubuntu only---one platform is enough 
+    - name: Doc
+      run: cargo doc --all-features
+    - name: Test
       run: cargo test --verbose
   windows:
     runs-on: windows-latest
@@ -35,7 +39,15 @@ jobs:
     - uses: actions/checkout@v4
     - name: Build
       run: cargo build --verbose
-    - name: Run tests
+    - name: Test
+      run: cargo test --verbose
+  macos:
+    runs-on: macos-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Build
+      run: cargo build --verbose
+    - name: Test
       run: cargo test --verbose
 
 # EOF
