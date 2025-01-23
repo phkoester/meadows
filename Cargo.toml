@@ -26,6 +26,8 @@ exclude = [
   "/rustfmt.toml"
 ]
 
+# -----------------------------------------------------------------------------------------------------------
+
 [dependencies]
 
 anstream = "0.6"
@@ -64,6 +66,10 @@ uninlined_format_args = "allow"
 [lints.rust]
 
 missing_docs = "warn"
+
+[package.metadata.docs.rs]
+
+features = ["tracing_config"]
 
 [profile.release]
 
