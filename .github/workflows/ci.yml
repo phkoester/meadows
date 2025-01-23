@@ -15,6 +15,14 @@ env:
   RUSTFLAGS: "-Dwarnings" # Fail on warnings, including Clippy lints
 
 jobs:
+  macos:
+    runs-on: macos-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Build
+      run: cargo build --verbose
+    - name: Test
+      run: cargo test --verbose
   ubuntu:
     runs-on: ubuntu-latest
     steps:
@@ -35,14 +43,6 @@ jobs:
       run: cargo test --verbose
   windows:
     runs-on: windows-latest
-    steps:
-    - uses: actions/checkout@v4
-    - name: Build
-      run: cargo build --verbose
-    - name: Test
-      run: cargo test --verbose
-  macos:
-    runs-on: macos-latest
     steps:
     - uses: actions/checkout@v4
     - name: Build
