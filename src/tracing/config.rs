@@ -126,7 +126,7 @@ fn init_file(config: &Config, file: &Path) -> Result<ArcMutexGuard, InitError> {
     tracing_config::config::read_config(file, tracing_config::config::RESOLVE_FROM_ENV_DEPTH)?;
 
   if config.print_path {
-    process_note!(crate::io::stdout(), "Loaded configuration file `{}` titled `{}`", file.display(), tracing_config.title)?;
+    process_note!(crate::io::stdout(), "Loaded configuration file `{}` titled {:?}", file.display(), tracing_config.title)?;
   }
 
   // Apply configuration
