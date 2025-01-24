@@ -2,8 +2,6 @@
 
 //! Initialize `tracing` using a TOML file.
 //!
-//! This module requires the **`tracing_config`** feature.
-//!
 //! It is a wrapper around the [`tracing_config`] crate, using Meadows's configuration-file search from
 //! [`crate::config`].
 //!

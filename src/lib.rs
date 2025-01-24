@@ -1,5 +1,7 @@
 // lib.rs
 
+#![cfg_attr(docsrs, feature(doc_auto_cfg))]
+
 //! # Meadows
 //!
 //! Meadows is an experimental library written in Rust.

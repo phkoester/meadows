@@ -20,6 +20,7 @@ exclude = [
   "/.github",
   "/.gitignore",
   "/.vscode",
+  "/Cargo.lock",
   "/Makefile",
   "/meadows.code-workspace",
   "/project.json",
@@ -69,8 +70,8 @@ missing_docs = "warn"
 
 [package.metadata.docs.rs]
 
-features = ["tracing_config"]
-rustdoc-args = ["--html-in-header", "src/katex.html"]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs", "--html-in-header", "src/katex.html"]
 
 [profile.release]
 

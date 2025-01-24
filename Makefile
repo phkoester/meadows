@@ -29,7 +29,8 @@ coverage:
 	@echo Created $(COVERAGE_DIR)/html/index.html
 
 doc:
-	@RUSTDOCFLAGS="--html-in-header $(KATEX_HTML)" cargo doc --all-features
+	@RUSTDOCFLAGS="--cfg docsrs --html-in-header $(KATEX_HTML)" \
+	    cargo +nightly doc --all-features
 
 fmt-check:
 	@cargo +nightly fmt --check
