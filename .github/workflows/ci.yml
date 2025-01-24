@@ -38,7 +38,7 @@ jobs:
       run: cargo +nightly clippy --all-targets --all-features
     # Run "Doc" on Ubuntu only---one platform is enough 
     - name: Doc
-      run: cargo doc --all-features
+      run: cargo doc --all-features --no-deps
     - name: Test
       run: cargo test --verbose
   windows:

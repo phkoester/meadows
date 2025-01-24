@@ -4,6 +4,7 @@
 
 BIN_DIR := target/debug/deps
 COVERAGE_DIR := target/coverage
+KATEX_HTML := $(shell realpath src/katex.html)
 
 nothing:
 
@@ -15,7 +16,7 @@ clippy:
 
 coverage:
 	@rm -rf $(COVERAGE_DIR)
-	CARGO_INCREMENTAL=0 \
+	@CARGO_INCREMENTAL=0 \
 	  LLVM_PROFILE_FILE=cargo-test-%p-%m.profraw \
 	  RUSTDOCFLAGS="-C instrument-coverage -Z unstable-options --persist-doctests $(BIN_DIR)" \
 	  RUSTFLAGS="-C instrument-coverage" \
@@ -28,7 +29,7 @@ coverage:
 	@echo Created $(COVERAGE_DIR)/html/index.html
 
 doc:
-	@cargo doc --all-features
+	@RUSTDOCFLAGS="--html-in-header $(KATEX_HTML)" cargo doc --all-features
 
 fmt-check:
 	@cargo +nightly fmt --check

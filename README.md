@@ -3,7 +3,7 @@
 [![CI](https://github.com/phkoester/meadows/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/phkoester/meadows/actions)
 [![crates.io](https://img.shields.io/crates/v/meadows.svg)](https://crates.io/crates/meadows)
 [![docs](https://docs.rs/meadows/badge.svg)](https://docs.rs/meadows)
-[![rust](https://img.shields.io/badge/rust-1.78%2B-orange.svg)](https://img.shields.io/badge/rust-1.78%2B-orange.svg)
+[![rust](https://img.shields.io/badge/rust-1.78.0%2B-orange.svg)](https://releases.rs/docs/1.78.0)
 
 Meadows is an experimental library written in Rust.
 

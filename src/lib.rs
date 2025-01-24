@@ -6,7 +6,7 @@
 //!
 //! ## Crate Features
 //!
-//! - **`tracing_config`** (disabled by default) - When enabled, the `crate::tracing::config` module is
+//! - **`tracing_config`** (disabled by default) - When enabled, the [`crate::tracing::config`] module is
 //!   available.
 //!
 //! ## Logging
@@ -43,6 +43,7 @@ pub mod config;
 pub mod env;
 pub mod io;
 pub mod macros;
+pub mod math;
 pub mod prelude;
 pub mod process;
 pub mod str;
