@@ -3,9 +3,7 @@
  */
 
 {
-  "dependencies": [
-    "gaia"
-  ],
+  "dependencies": ["gaia"],
   "version": "@Cargo.toml",
 }
 
