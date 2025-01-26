@@ -4,7 +4,7 @@
 
 BIN_DIR := target/debug/deps
 COVERAGE_DIR := target/coverage
-KATEX_HTML := $(shell realpath src/katex.html)
+KATEX_HTML := $(realpath src/katex.html) # Local Rustdoc invocation needs an absolute path
 
 nothing:
 

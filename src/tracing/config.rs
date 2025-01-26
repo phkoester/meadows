@@ -48,11 +48,11 @@ pub struct Config {
 }
 
 impl Config {
-  /// Returns a new `Config` with default settings suitable for the `exec_type`.
+  /// Returns a new [`Config`] with default settings suitable for the `exec_type`.
   ///
   /// | Field        | Default Value
   /// | :----------- | :------------
-  /// | `is_debug`   | `true` if environment variable `tracing_config_debug` is set to to `"true"`
+  /// | `is_debug`   | `true` if environment variable `tracing_config_debug` is set to to `true`
   /// | `log_start`  | `true`
   /// | `name`       | Depends on `exec_type`
   /// | `paths`      | The value of the environment variable `tracing_config`, otherwise [`None`]
