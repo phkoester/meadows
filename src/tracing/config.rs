@@ -227,7 +227,7 @@ Path             : {path:?}
     }
   }
 
-  ret.pop(); // Strip trailing `\n`
+  ret.pop(); // Strip trailing '\n'
   ret.fence('#', config.text_width)
 }
 

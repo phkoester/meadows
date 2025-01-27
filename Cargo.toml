@@ -22,8 +22,8 @@ exclude = [
   "/.vscode",
   "/Cargo.lock",
   "/Makefile",
+  "/gaia-project.json",
   "/meadows.code-workspace",
-  "/project.json",
   "/rustfmt.toml"
 ]
 
