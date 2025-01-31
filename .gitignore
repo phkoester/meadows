@@ -2,7 +2,6 @@
 # .gitignore
 #
 
-/Cargo.lock
 /target/
 
 *.log
