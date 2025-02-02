@@ -2,13 +2,13 @@
 
 //! Macros.
 
+pub use owo_colors::OwoColorize as Colorize;
+
 // Macros ---------------------------------------------------------------------------------------------------
 
 /// Prints the process invocation name, an error label, and a message to a stream.
 ///
 /// The macro evaluates to a [`std::io::Result<()>`], just like [`writeln`] does.
-///
-/// **NOTE:** The macro requires the crate [`owo-colors`].
 ///
 /// # Examples
 ///
@@ -22,7 +22,7 @@
 macro_rules! process_error {
   ($stream:expr, $($arg:tt)+) => {{
     use ::std::io::prelude::*;
-    use ::owo_colors::OwoColorize;
+    use $crate::macros::Colorize;
 
     let name = $crate::env::inv_name().to_string_lossy();
     writeln!($stream, "{}: {}: {}", name, "error".bold().red(), format_args!($($arg)+))
@@ -32,8 +32,6 @@ macro_rules! process_error {
 /// Prints the process invocation name and a message to , a note label, and a message to a stream.
 ///
 /// The macro evaluates to a [`std::io::Result<()>`], just like [`writeln`] does.
-///
-/// **NOTE:** The macro requires the crate [`owo-colors`].
 ///
 /// # Examples
 ///
@@ -47,7 +45,7 @@ macro_rules! process_error {
 macro_rules! process_note {
   ($stream:expr, $($arg:tt)+) => {{
     use ::std::io::prelude::*;
-    use ::owo_colors::OwoColorize;
+    use $crate::macros::Colorize;
 
     let name = $crate::env::inv_name().to_string_lossy();
     writeln!($stream, "{}: {}: {}", name, "note".bold().green(), format_args!($($arg)+))
@@ -57,8 +55,6 @@ macro_rules! process_note {
 /// Prints the process invocation name, a warning label, and a message to a stream.
 ///
 /// The macro evaluates to a [`std::io::Result<()>`], just like [`writeln`] does.
-///
-/// **NOTE:** The macro requires the crate [`owo-colors`].
 ///
 /// # Examples
 ///
@@ -72,7 +68,7 @@ macro_rules! process_note {
 macro_rules! process_warn {
   ($stream:expr, $($arg:tt)+) => {{
     use ::std::io::prelude::*;
-    use ::owo_colors::OwoColorize;
+    use $crate::macros::Colorize;
 
     let name = $crate::env::inv_name().to_string_lossy();
     writeln!($stream, "{}: {}: {}", name, "warning".bold().yellow(), format_args!($($arg)+))
