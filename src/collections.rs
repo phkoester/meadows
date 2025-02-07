@@ -2,8 +2,8 @@
 
 //! Collections and collection-related utilities.
 
-pub use uvec::Uvec;
-
 pub mod uvec;
+
+pub use uvec::Uvec;
 
 // EOF
