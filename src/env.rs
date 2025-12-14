@@ -58,6 +58,8 @@ fn env_mutex() -> &'static Mutex<()> {
 
 /// A replacement for [`env::var_os`].
 ///
+/// # Safety
+///
 /// All environment-variable operations from this module are thread-safe as long as they are used
 /// exclusively.
 #[allow(clippy::missing_panics_doc)]
