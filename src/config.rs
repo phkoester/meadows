@@ -34,28 +34,6 @@ macro_rules! debug {
 
 type AutoStreamStdoutLock = AutoStream<StdoutLock<'static>>;
 
-// `FindError` ----------------------------------------------------------------------------------------------
-
-/// Error type for the `find` functions.
-#[derive(Debug, ThisError)]
-pub enum FindError {
-  /// File not found.
-  #[error("File not found")]
-  FileNotFound,
-  /// Invalid file-name pattern.
-  #[error("Invalid file-name pattern `{0}`")]
-  InvalidFileNamePattern(String),
-  /// [`io::Error`].
-  #[error("I/O error")]
-  Io(#[from] io::Error),
-}
-
-impl FindError {
-  /// Returns `true` if the error should be printed.
-  #[must_use]
-  pub fn should_print(&self) -> bool { !matches!(self, Self::FileNotFound) }
-}
-
 // `ConfigLevel` --------------------------------------------------------------------------------------------
 
 /// Configuration levels, ordered from lowest (most general) to highest (most specific) priority.
@@ -97,6 +75,28 @@ pub enum ConfigLevel {
   /// Configuration files at path level reside at an explicitly specified path or relative to an explicitly
   /// specified directory.
   Path,
+}
+
+// `FindError` ----------------------------------------------------------------------------------------------
+
+/// Error type for the `find` functions.
+#[derive(Debug, ThisError)]
+pub enum FindError {
+  /// File not found.
+  #[error("File not found")]
+  FileNotFound,
+  /// Invalid file-name pattern.
+  #[error("Invalid file-name pattern `{0}`")]
+  InvalidFileNamePattern(String),
+  /// [`io::Error`].
+  #[error("I/O error")]
+  Io(#[from] io::Error),
+}
+
+impl FindError {
+  /// Returns `true` if the error should be printed.
+  #[must_use]
+  pub fn should_print(&self) -> bool { !matches!(self, Self::FileNotFound) }
 }
 
 // Functions ------------------------------------------------------------------------------------------------
