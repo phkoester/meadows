@@ -120,12 +120,12 @@ impl FindError {
 /// use meadows::process::ExecType;
 ///
 /// let config_file = config::find_config_file(
-///   ExecType::Binary,               // `exec_type`
-///   "{}config.toml",                // `file_name_pattern`
-///   true,                           // `is_debug`,
-///   env::inv_name(),                // `name`
-///   env::get("MY_PATH").as_deref(), // `paths`
-///   true,                           // `set_env_vars`
+///   ExecType::Binary,    // `exec_type`
+///   "{}config.toml",     // `file_name_pattern`
+///   true,                // `is_debug`,
+///   env::inv_name(),     // `name`
+///   env::get("MY_PATH"), // `paths`
+///   true,                // `set_env_vars`
 /// )?;
 /// #   Ok(())
 /// # }
@@ -133,12 +133,12 @@ impl FindError {
 /// # run();
 /// ```
 #[allow(clippy::missing_panics_doc)]
-pub fn find_config_file(
+pub fn find_config_file<Paths: AsRef<OsStr>>(
   exec_type: ExecType,
   file_name_pattern: &str,
   is_debug: bool,
   name: &OsStr,
-  paths: Option<&OsStr>,
+  paths: Option<Paths>,
   set_env_vars: bool,
 ) -> Result<(ConfigLevel, PathBuf), FindError> {
   let files =
