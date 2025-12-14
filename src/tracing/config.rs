@@ -8,7 +8,6 @@
 //! For binary executables, use the [`try_init`] function. For example and test executables, use the [`init`]
 //! function.
 
-use std::env;
 use std::ffi::OsString;
 use std::fmt::Write;
 use std::io;
@@ -59,11 +58,6 @@ impl Config {
   /// | `paths`      | The value of the environment variable `tracing_config`, otherwise [`None`]
   /// | `print_path` | `true`
   /// | `text_width` | [`crate::TEXT_WIDTH`]
-  ///
-  /// # Safety
-  ///
-  /// The function reads the environment, which is not thread-safe. For detailed information, read the
-  /// "Safety" section for [`env::set_var`].
   #[must_use]
   pub fn new(exec_type: ExecType) -> Config {
     use ExecType::*;
@@ -116,9 +110,9 @@ impl InitError {
 
 // Functions ------------------------------------------------------------------------------------------------
 
-fn get_env() -> Option<OsString> { env::var_os("tracing_config") }
+fn get_env() -> Option<OsString> { crate::env::get("tracing_config") }
 
-fn get_env_debug() -> Option<bool> { env::var_os("tracing_config_debug").map(|val| val == "true") }
+fn get_env_debug() -> Option<bool> { crate::env::get("tracing_config_debug").map(|val| val == "true") }
 
 fn init_file(config: &Config, file: &Path) -> Result<ArcMutexGuard, InitError> {
   // Read configuration
@@ -200,7 +194,7 @@ fn start_message(config: &Config, config_path: &Path) -> String {
   // `Process started`
 
   let inv_name = crate::env::inv_name().to_string_lossy();
-  let current_dir_str = match env::current_dir() {
+  let current_dir_str = match std::env::current_dir() {
     Ok(dir) => format!("{dir:?}"),
     Err(_) => String::from("N/A"),
   };
@@ -219,7 +213,7 @@ Path             : {path:?}
 
   // Arguments, if any
 
-  let args: Vec<String> = env::args().skip(1).collect();
+  let args: Vec<String> = std::env::args().skip(1).collect();
   if !args.is_empty() {
     ret.push_str("\nArguments:\n\n");
     for arg in args {

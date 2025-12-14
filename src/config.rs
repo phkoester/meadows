@@ -2,7 +2,6 @@
 
 //! Configuration-related utilities.
 
-use std::env;
 use std::ffi::OsStr;
 use std::io;
 use std::io::prelude::*;
@@ -116,18 +115,17 @@ impl FindError {
 ///
 /// ```
 /// # fn run() -> anyhow::Result<()> {
-/// use std::env;
-///
 /// use meadows::config;
+/// use meadows::env;
 /// use meadows::process::ExecType;
 ///
 /// let config_file = config::find_config_file(
-///   ExecType::Binary,                  // `exec_type`
-///   "{}config.toml",                   // `file_name_pattern`
-///   true,                              // `is_debug`,
-///   meadows::env::inv_name(),          // `name`
-///   env::var_os("MY_PATH").as_deref(), // `paths`
-///   true,                              // `set_env_vars`
+///   ExecType::Binary,               // `exec_type`
+///   "{}config.toml",                // `file_name_pattern`
+///   true,                           // `is_debug`,
+///   env::inv_name(),                // `name`
+///   env::get("MY_PATH").as_deref(), // `paths`
+///   true,                           // `set_env_vars`
 /// )?;
 /// #   Ok(())
 /// # }
@@ -171,11 +169,6 @@ pub fn find_config_file(
 /// | `inv_name`  | [`Binary`]       | The invocation name of the executable, as returned by [`inv_name`]
 /// | `inv_path`  | [`Binary`]       | The invocation path of the executable, as returned by [`inv_path`]
 /// | `test_name` | Test executables | The canonical test name of the executable, as returned by [`test_name`]
-///
-/// # Safety
-///
-/// If `set_env_vars` is `true`, some environment variables are defined using [`env::set_var`], which is not
-/// thread-safe. For detailed information, read the "Safety" section for [`env::set_var`].
 ///
 /// # File Search
 ///
@@ -250,15 +243,16 @@ pub fn find_config_file(
 /// use std::env;
 ///
 /// use meadows::config;
+/// use meadows::env;
 /// use meadows::process::ExecType;
 ///
 /// let config_files = config::find_config_files(
-///   ExecType::Binary,                  // `exec_type`
-///   "{}config.toml",                   // `file_name_pattern`
-///   true,                              // `is_debug`,
-///   meadows::env::inv_name(),          // `name`
-///   env::var_os("MY_PATH").as_deref(), // `paths`
-///   true,                              // `set_env_vars`
+///   ExecType::Binary,               // `exec_type`
+///   "{}config.toml",                // `file_name_pattern`
+///   true,                           // `is_debug`,
+//    env::inv_name(),                // `name`
+///   env::get("MY_PATH").as_deref(), // `paths`
+///   true,                           // `set_env_vars`
 /// )?;
 ///
 /// for config_file in config_files {
@@ -331,7 +325,7 @@ fn find_config_files_impl(
   })?;
 
   debug!(stdout, "Current directory: {}", {
-    match env::current_dir() {
+    match std::env::current_dir() {
       Ok(dir) => format!("{dir:?}"),
       Err(_) => String::from("-"),
     }
@@ -389,7 +383,7 @@ fn find_config_files_impl(
 
   // Level `Path`
   if let Some(paths) = paths {
-    for path in env::split_paths(paths) {
+    for path in std::env::split_paths(paths) {
       if path.is_file() {
         add!(Path, path);
       } else {
@@ -401,7 +395,7 @@ fn find_config_files_impl(
 
   // Level `Instance`
   if exec_type == Binary {
-    let mut dir = env::current_dir().ok();
+    let mut dir = std::env::current_dir().ok();
     while let Some(val) = dir {
       add!(Instance, val.join(&hidden_file_name));
       add!(Instance, val.join(&hidden_relative_file));
@@ -410,7 +404,7 @@ fn find_config_files_impl(
   }
 
   // Level `Package`
-  let manifest_dir = env::var_os("CARGO_MANIFEST_DIR").map(PathBuf::from);
+  let manifest_dir = crate::env::get("CARGO_MANIFEST_DIR").map(PathBuf::from);
   if let Some(dir) = manifest_dir {
     match exec_type {
       Binary => {
@@ -504,7 +498,7 @@ fn set_env_vars_impl(stdout: &mut Option<AutoStreamStdoutLock>, exec_type: ExecT
   let mut set_env_var = |name: &str, val: &OsStr| -> io::Result<()> {
     debug!(stdout, "Setting `{name}` to {val:?}")?;
     unsafe {
-      env::set_var(name, val);
+      crate::env::set(name, Some(val));
     };
     Ok(())
   };

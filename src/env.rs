@@ -8,9 +8,14 @@ use std::ffi::OsString;
 use std::io;
 use std::io::prelude::*;
 use std::path::PathBuf;
-use std::sync::OnceLock;
+use std::sync::{Mutex, OnceLock};
 
 use regex::Regex;
+
+// Variables ------------------------------------------------------------------------------------------------
+
+/// Thread-safe mutex for synchronizing environment-variable operations.
+static ENV_MUTEX: OnceLock<Mutex<()>> = OnceLock::new();
 
 // Functions ------------------------------------------------------------------------------------------------
 
@@ -28,28 +33,38 @@ pub fn dir() -> &'static PathBuf {
   })
 }
 
-/// Prints the result of [`env::vars`] as key-value pairs to `stdout`.
+/// Prints the result of [`vars`] as key-value pairs to `stdout`.
+///
+/// # Safety
+///
+/// All environment-variable operations from this module are thread-safe as long as they are used
+/// exclusively.
 ///
 /// # Errors
 ///
 /// Returns [`Err`] with [`std::io::Error`] if an I/O error occurs.
+#[allow(clippy::missing_panics_doc)]
 pub fn dump() -> io::Result<()> {
-  for (name, val) in env::vars() {
-    writeln!(io::stdout(), "{name}={val}")?;
+  let _guard = env_mutex().lock().unwrap();
+  for (name, val) in vars() {
+    writeln!(io::stdout(), "{name:?}={val:?}")?;
   }
   Ok(())
 }
 
-/// Prints the result of [`env::vars_os`] as key-value pairs to `stdout`.
+fn env_mutex() -> &'static Mutex<()> {
+  ENV_MUTEX.get_or_init(|| Mutex::new(()))
+}
+
+/// A replacement for [`env::var_os`].
 ///
-/// # Errors
-///
-/// Returns [`Err`] with [`std::io::Error`] if an I/O error occurs.
-pub fn dump_os() -> io::Result<()> {
-  for (name, val) in env::vars_os() {
-    writeln!(io::stdout(), "{name:?}={val:?}")?;
-  }
-  Ok(())
+/// All environment-variable operations from this module are thread-safe as long as they are used
+/// exclusively.
+#[allow(clippy::missing_panics_doc)]
+#[must_use]
+pub fn get<K: AsRef<OsStr>>(key: K) -> Option<OsString> {
+  let _guard = env_mutex().lock().unwrap();
+  env::var_os(key)
 }
 
 /// Returns the invocation directory of the executable.
@@ -134,6 +149,40 @@ pub fn path() -> &'static PathBuf {
   })
 }
 
+/// A replacement for [`env::set_var`] and [`env::remove_var`].
+///
+/// If `value` is [`Some`], the environment variable `key` is set to the given value. If `value` is [`None`],
+/// the environment variable `key`is removed.
+///
+/// # Safety
+///
+/// All environment-variable operations from this module are thread-safe as long as they are used
+/// exclusively.
+///
+/// # Examples
+///
+/// ```
+/// use meadows::env;
+///
+/// // Set an environment variable
+/// env::set("MY_VAR", Some("my_value".into()));
+///
+/// // Remove an environment variable
+/// env::set("MY_VAR", None);
+/// ```
+#[allow(clippy::missing_panics_doc)]
+pub unsafe fn set<K: AsRef<OsStr>, V: AsRef<OsStr>>(key: K, value: Option<V>) {
+  let _guard = env_mutex().lock().unwrap();
+  match value {
+    Some(val) => unsafe {
+      env::set_var(key, val);
+    },
+    None => unsafe {
+      env::remove_var(key);
+    },
+  }
+}
+
 /// Returns the path to the system's configuration directory.
 ///
 /// The returned value depends on the operating system and is either a [`Some`], containing a value from the
@@ -157,7 +206,7 @@ fn system_config_dir_impl() -> Option<PathBuf> {
 
 #[cfg(windows)]
 fn system_config_dir_impl() -> Option<PathBuf> {
-  let dir = env::var_os("PROGRAMDATA").map(PathBuf::from);
+  let dir = get("PROGRAMDATA").map(PathBuf::from);
   if let Some(dir) = dir && dir.is_dir() {
     return Some(dir);
   }
@@ -189,6 +238,19 @@ fn test_name_impl(name: &OsStr) -> OsString {
   let name = name.to_string_lossy();
   assert!(re.is_match(name.as_ref()), "`{name}` is not a valid test-executable name");
   name[0..name.len() - 17].into()
+}
+
+/// A replacement for [`env::vars_os`].
+///
+/// # Safety
+///
+/// All environment-variable operations from this module are thread-safe as long as they are used
+/// exclusively.
+#[allow(clippy::missing_panics_doc)]
+#[must_use]
+pub fn vars() -> env::VarsOs {
+  let _guard = env_mutex().lock().unwrap();
+  env::vars_os()
 }
 
 // Tests ====================================================================================================
