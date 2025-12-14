@@ -111,11 +111,7 @@ pub fn inv_path() -> &'static PathBuf {
 pub fn name() -> &'static OsString {
   static VAL: OnceLock<OsString> = OnceLock::new();
   VAL.get_or_init(|| {
-    if cfg!(windows) {
-      path().file_stem().unwrap().into()
-    } else {
-      path().file_name().unwrap().into()
-    }
+    if cfg!(windows) { path().file_stem().unwrap().into() } else { path().file_name().unwrap().into() }
   })
 }
 
@@ -162,10 +158,8 @@ fn system_config_dir_impl() -> Option<PathBuf> {
 #[cfg(windows)]
 fn system_config_dir_impl() -> Option<PathBuf> {
   let dir = env::var_os("PROGRAMDATA").map(PathBuf::from);
-  if let Some(dir) = dir {
-    if dir.is_dir() {
-      return Some(dir);
-    }
+  if let Some(dir) = dir && dir.is_dir() {
+    return Some(dir);
   }
   None
 }

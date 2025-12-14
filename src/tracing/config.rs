@@ -10,6 +10,7 @@
 
 use std::env;
 use std::ffi::OsString;
+use std::fmt::Write;
 use std::io;
 use std::path::Path;
 use std::sync::OnceLock;
@@ -206,7 +207,7 @@ fn start_message(config: &Config, config_path: &Path) -> String {
   let inv_path = crate::env::inv_path();
   let path = crate::env::path();
 
-  ret.push_str(&format!("\
+  write!(ret, "\
 Process started: {inv_name}
 
 Log-configuration file: {config_path:?}
@@ -214,7 +215,7 @@ Log-configuration file: {config_path:?}
 Current directory: {current_dir_str}
 Invocation path  : {inv_path:?}
 Path             : {path:?}
-"));
+").unwrap();
 
   // Arguments, if any
 
@@ -222,8 +223,7 @@ Path             : {path:?}
   if !args.is_empty() {
     ret.push_str("\nArguments:\n\n");
     for arg in args {
-      let line = format!("- {arg:?}\n");
-      ret.push_str(&line);
+      writeln!(ret, "- {arg:?}").unwrap();
     }
   }
 
