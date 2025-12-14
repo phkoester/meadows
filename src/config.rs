@@ -507,7 +507,9 @@ fn set_env_vars(stdout: &mut Option<AutoStreamStdoutLock>, exec_type: ExecType) 
 fn set_env_vars_impl(stdout: &mut Option<AutoStreamStdoutLock>, exec_type: ExecType) -> io::Result<()> {
   let mut set_env_var = |name: &str, val: &OsStr| -> io::Result<()> {
     debug!(stdout, "Setting `{name}` to {val:?}")?;
-    env::set_var(name, val);
+    unsafe {
+      env::set_var(name, val)
+    };
     Ok(())
   };
 

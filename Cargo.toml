@@ -11,10 +11,10 @@ authors = ["Philip Köster"]
 description = "An experimental library written in Rust"
 default-run = "meadows-std"
 documentation = "https://docs.rs/meadows"
-edition = "2021"
+edition = "2024"
 license = "Apache-2.0 OR MIT"
 repository = "https://github.com/phkoester/meadows"
-rust-version = "1.78"
+rust-version = "1.92"
 
 exclude = [
   "/.github",
