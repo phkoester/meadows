@@ -167,13 +167,13 @@ pub fn path() -> &'static PathBuf {
 /// use meadows::env;
 ///
 /// // Set an environment variable
-/// env::set("MY_VAR", Some("my_value".into()));
+/// env::set("MY_VAR", Some("my_value"));
 ///
 /// // Remove an environment variable
-/// env::set("MY_VAR", None);
+/// env::set("MY_VAR", None::<&str>);
 /// ```
 #[allow(clippy::missing_panics_doc)]
-pub unsafe fn set<K: AsRef<OsStr>, V: AsRef<OsStr>>(key: K, value: Option<V>) {
+pub fn set<K: AsRef<OsStr>, V: AsRef<OsStr>>(key: K, value: Option<V>) {
   let _guard = env_mutex().lock().unwrap();
   match value {
     Some(val) => unsafe {

@@ -240,19 +240,17 @@ pub fn find_config_file(
 ///
 /// ```
 /// # fn run() -> anyhow::Result<()> {
-/// use std::env;
-///
 /// use meadows::config;
 /// use meadows::env;
 /// use meadows::process::ExecType;
 ///
 /// let config_files = config::find_config_files(
-///   ExecType::Binary,               // `exec_type`
-///   "{}config.toml",                // `file_name_pattern`
-///   true,                           // `is_debug`,
-//    env::inv_name(),                // `name`
-///   env::get("MY_PATH").as_deref(), // `paths`
-///   true,                           // `set_env_vars`
+///   ExecType::Binary,    // `exec_type`
+///   "{}config.toml",     // `file_name_pattern`
+///   true,                // `is_debug`
+///   env::inv_name(),     // `name`
+///   env::get("MY_PATH"), // `paths`
+///   true                 // `set_env_vars`
 /// )?;
 ///
 /// for config_file in config_files {
@@ -287,24 +285,24 @@ pub fn find_config_file(
 /// [`UnitTest`]: ExecType::UnitTest
 /// [`IntegTest`]: ExecType::IntegTest
 /// [`BenchTest`]: ExecType::BenchTest
-pub fn find_config_files(
+pub fn find_config_files<Paths: AsRef<OsStr>>(
   exec_type: ExecType,
   file_name_pattern: &str,
   is_debug: bool,
   name: &OsStr,
-  paths: Option<&OsStr>,
+  paths: Option<Paths>,
   set_env_vars: bool,
 ) -> Result<impl IntoIterator<Item = (ConfigLevel, PathBuf)>, FindError> {
   find_config_files_impl(false, exec_type, file_name_pattern, is_debug, name, paths, set_env_vars)
 }
 
-fn find_config_files_impl(
+fn find_config_files_impl<Paths: AsRef<OsStr>>(
   find_one: bool,
   exec_type: ExecType,
   file_name_pattern: &str,
   is_debug: bool,
   name: &OsStr,
-  paths: Option<&OsStr>,
+  paths: Option<Paths>,
   set_env_vars: bool,
 ) -> Result<impl IntoIterator<Item = (ConfigLevel, PathBuf)>, FindError> {
   use ConfigLevel::*;
@@ -382,7 +380,7 @@ fn find_config_files_impl(
   }
 
   // Level `Path`
-  if let Some(paths) = paths {
+  if let Some(paths) = &paths {
     for path in std::env::split_paths(paths) {
       if path.is_file() {
         add!(Path, path);
@@ -497,9 +495,7 @@ fn set_env_vars(stdout: &mut Option<AutoStreamStdoutLock>, exec_type: ExecType) 
 fn set_env_vars_impl(stdout: &mut Option<AutoStreamStdoutLock>, exec_type: ExecType) -> io::Result<()> {
   let mut set_env_var = |name: &str, val: &OsStr| -> io::Result<()> {
     debug!(stdout, "Setting `{name}` to {val:?}")?;
-    unsafe {
-      crate::env::set(name, Some(val));
-    };
+    crate::env::set(name, Some(val));
     Ok(())
   };
 
