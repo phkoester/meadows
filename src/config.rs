@@ -448,18 +448,14 @@ fn find_config_files_impl(
   }
 
   // Level `User`
-  if exec_type == Binary {
-    if let Some(dir) = dirs::config_dir() {
-      add!(User, dir.join(&relative_file));
-    }
+  if exec_type == Binary && let Some(dir) = dirs::config_dir() {
+    add!(User, dir.join(&relative_file));
   }
 
   // Level `System`
-  if exec_type == Binary {
-    if let Some(dir) = crate::env::system_config_dir() {
-      add!(System, dir.join(&file_name));
-      add!(System, dir.join(&relative_file));
-    }
+  if exec_type == Binary && let Some(dir) = crate::env::system_config_dir() {
+    add!(System, dir.join(&file_name));
+    add!(System, dir.join(&relative_file));
   }
 
   // Level `Executable`
@@ -508,7 +504,7 @@ fn set_env_vars_impl(stdout: &mut Option<AutoStreamStdoutLock>, exec_type: ExecT
   let mut set_env_var = |name: &str, val: &OsStr| -> io::Result<()> {
     debug!(stdout, "Setting `{name}` to {val:?}")?;
     unsafe {
-      env::set_var(name, val)
+      env::set_var(name, val);
     };
     Ok(())
   };

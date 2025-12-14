@@ -102,11 +102,9 @@ where
     assert!(index <= len, "`index` ({index}) > `len` ({len})");
 
     let key = (self.key)(&val);
-    if let Some(key) = key {
-      if self.set.insert(key) {
-        self.vec.insert(index, val);
-        return true;
-      }
+    if let Some(key) = key && self.set.insert(key) {
+      self.vec.insert(index, val);
+      return true;
     }
     false
   }
@@ -148,11 +146,9 @@ where
   /// Returns `true` if the operation succeeds.
   pub fn push(&mut self, val: V) -> bool {
     let key = (self.key)(&val);
-    if let Some(key) = key {
-      if self.set.insert(key) {
-        self.vec.push(val);
-        return true;
-      }
+    if let Some(key) = key && self.set.insert(key) {
+      self.vec.push(val);
+      return true;
     }
     false
   }
