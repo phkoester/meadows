@@ -119,13 +119,14 @@ impl FindError {
 /// use meadows::env;
 /// use meadows::process::ExecType;
 ///
+/// let my_path = env::get("MY_PATH");
 /// let config_file = config::find_config_file(
-///   ExecType::Binary,    // `exec_type`
-///   "{}config.toml",     // `file_name_pattern`
-///   true,                // `is_debug`,
-///   env::inv_name(),     // `name`
-///   env::get("MY_PATH"), // `paths`
-///   true,                // `set_env_vars`
+///   ExecType::Binary, // `exec_type`
+///   "{}config.toml",  // `file_name_pattern`
+///   true,             // `is_debug`,
+///   env::inv_name(),  // `name`
+///   my_path.as_ref(), // `paths`
+///   true,             // `set_env_vars`
 /// )?;
 /// #   Ok(())
 /// # }
@@ -138,7 +139,7 @@ pub fn find_config_file<Paths: AsRef<OsStr>>(
   file_name_pattern: &str,
   is_debug: bool,
   name: &OsStr,
-  paths: Option<Paths>,
+  paths: Option<&Paths>,
   set_env_vars: bool,
 ) -> Result<(ConfigLevel, PathBuf), FindError> {
   let files =
@@ -244,13 +245,14 @@ pub fn find_config_file<Paths: AsRef<OsStr>>(
 /// use meadows::env;
 /// use meadows::process::ExecType;
 ///
+/// let my_path = env::get("MY_PATH");
 /// let config_files = config::find_config_files(
-///   ExecType::Binary,    // `exec_type`
-///   "{}config.toml",     // `file_name_pattern`
-///   true,                // `is_debug`
-///   env::inv_name(),     // `name`
-///   env::get("MY_PATH"), // `paths`
-///   true                 // `set_env_vars`
+///   ExecType::Binary, // `exec_type`
+///   "{}config.toml",  // `file_name_pattern`
+///   true,             // `is_debug`
+///   env::inv_name(),  // `name`
+///   my_path.as_ref(), // `paths`
+///   true              // `set_env_vars`
 /// )?;
 ///
 /// for config_file in config_files {
@@ -290,7 +292,7 @@ pub fn find_config_files<Paths: AsRef<OsStr>>(
   file_name_pattern: &str,
   is_debug: bool,
   name: &OsStr,
-  paths: Option<Paths>,
+  paths: Option<&Paths>,
   set_env_vars: bool,
 ) -> Result<impl IntoIterator<Item = (ConfigLevel, PathBuf)>, FindError> {
   find_config_files_impl(false, exec_type, file_name_pattern, is_debug, name, paths, set_env_vars)
@@ -302,7 +304,7 @@ fn find_config_files_impl<Paths: AsRef<OsStr>>(
   file_name_pattern: &str,
   is_debug: bool,
   name: &OsStr,
-  paths: Option<Paths>,
+  paths: Option<&Paths>,
   set_env_vars: bool,
 ) -> Result<impl IntoIterator<Item = (ConfigLevel, PathBuf)>, FindError> {
   use ConfigLevel::*;

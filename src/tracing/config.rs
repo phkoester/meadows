@@ -289,7 +289,7 @@ fn try_init_impl(config: &Config) -> Result<ArcMutexGuard, InitError> {
     "{}tracing.toml", // `file_name_pattern`
     config.is_debug,
     &config.name,
-    config.paths.as_deref(),
+    config.paths.as_ref(),
     true, // `set_env_vars`
   )?;
 
