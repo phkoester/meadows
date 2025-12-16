@@ -17,8 +17,8 @@ use std::sync::OnceLock;
 use thiserror::Error as ThisError;
 use tracing::info;
 use tracing_config;
-use tracing_config::config::ArcMutexGuard;
 use tracing_config::TracingConfigError;
+use tracing_config::config::ArcMutexGuard;
 
 use crate::config::FindError;
 use crate::prelude::*;

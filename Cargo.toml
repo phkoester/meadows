@@ -14,7 +14,7 @@ documentation = "https://docs.rs/meadows"
 edition = "2024"
 license = "Apache-2.0 OR MIT"
 repository = "https://github.com/phkoester/meadows"
-rust-version = "1.91"
+rust-version = "1.91.1"
 
 exclude = [
   "/.github",

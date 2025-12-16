@@ -52,9 +52,7 @@ pub fn dump() -> io::Result<()> {
   Ok(())
 }
 
-fn env_mutex() -> &'static Mutex<()> {
-  ENV_MUTEX.get_or_init(|| Mutex::new(()))
-}
+fn env_mutex() -> &'static Mutex<()> { ENV_MUTEX.get_or_init(|| Mutex::new(())) }
 
 /// A replacement for [`env::var_os`].
 ///

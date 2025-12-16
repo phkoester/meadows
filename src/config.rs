@@ -4,8 +4,8 @@
 
 use std::ffi::OsStr;
 use std::io;
-use std::io::prelude::*;
 use std::io::StdoutLock;
+use std::io::prelude::*;
 use std::path::PathBuf;
 use std::process;
 use std::sync::OnceLock;

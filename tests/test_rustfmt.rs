@@ -45,13 +45,7 @@ where
   fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result { write!(f, "[...]") }
 }
 
-pub fn c() -> bool {
-  if 3 > 2 {
-    true
-  } else {
-    false
-  }
-}
+pub fn c() -> bool { if 3 > 2 { true } else { false } }
 
 pub fn some_function() {
   // array_width
@@ -65,15 +59,15 @@ pub fn some_function() {
 
   // binop_separator, max_width
 
-  _ = 1_000_000
-    + 1_000_000
-    + 1_000_000
-    + 1_000_000
-    + 1_000_000
-    + 1_000_000
-    + 1_000_000
-    + 1_000_000
-    + 1_000_000;
+  _ = 1_000_000 +
+    1_000_000 +
+    1_000_000 +
+    1_000_000 +
+    1_000_000 +
+    1_000_000 +
+    1_000_000 +
+    1_000_000 +
+    1_000_000;
 
   #[rustfmt::skip]
   let _ = 1_000_000 + 1_000_000 + 1_000_000 + 1_000_000 + 1_000_000 + 1_000_000 + 1_000_000 + 1_000_000 + 1_000_000;
@@ -81,7 +75,7 @@ pub fn some_function() {
 
 // comment_width, wrap_comments
 
-// eueiueiwe weiwe wiuewi uewi ewiuewiuewiuew ieuwi eu wieuwi euwi euwi eiwu eiweuwieu wieuwieuw ieu wieuwi
+// eueiueiwe weiwe wiuewi uewi ewiuewiuewiuew ieuwi eu wieuwi euwi euwi eiwu eiweuwieu wieuwieuw ieu wieuwie
 // eu wiewiue EOF
 
 // condense_wildcard_suffices
