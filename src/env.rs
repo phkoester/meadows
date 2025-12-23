@@ -45,7 +45,6 @@ pub fn dir() -> &'static PathBuf {
 /// Returns [`Err`] with [`std::io::Error`] if an I/O error occurs.
 #[allow(clippy::missing_panics_doc)]
 pub fn dump() -> io::Result<()> {
-  let _guard = env_mutex().lock().unwrap();
   for (name, val) in vars() {
     writeln!(io::stdout(), "{name:?}={val:?}")?;
   }
@@ -54,7 +53,7 @@ pub fn dump() -> io::Result<()> {
 
 fn env_mutex() -> &'static Mutex<()> { ENV_MUTEX.get_or_init(|| Mutex::new(())) }
 
-/// A replacement for [`env::var_os`].
+/// A thread-safe replacement for [`env::var_os`].
 ///
 /// # Safety
 ///
@@ -149,7 +148,7 @@ pub fn path() -> &'static PathBuf {
   })
 }
 
-/// A replacement for [`env::set_var`] and [`env::remove_var`].
+/// A thread-safe replacement for [`env::set_var`] and [`env::remove_var`].
 ///
 /// If `value` is [`Some`], the environment variable `key` is set to the given value. If `value` is [`None`],
 /// the environment variable `key`is removed.
@@ -240,7 +239,7 @@ fn test_name_impl(name: &OsStr) -> OsString {
   name[0..name.len() - 17].into()
 }
 
-/// A replacement for [`env::vars_os`].
+/// A thread-safe replacement for [`env::vars_os`].
 ///
 /// # Safety
 ///

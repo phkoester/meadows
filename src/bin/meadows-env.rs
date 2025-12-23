@@ -4,7 +4,11 @@
 
 use meadows::env;
 
+use std::io;
+use std::io::prelude::*;
+
 fn main() -> anyhow::Result<()> {
+  writeln!(io::stdout().lock(), "This is meadows-env")?;
   env::dump()?;
   Ok(())
 }

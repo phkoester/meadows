@@ -8,8 +8,8 @@
     {
       "type": "lldb-dap",
       "request": "launch",
-      "name": "meadows-bare",
-      "program": "${workspaceRoot}/target/debug/meadows-bare",
+      "name": "meadows-env",
+      "program": "${workspaceRoot}/target/debug/meadows-env",
       "args": [],
       "env": [],
       "cwd": "${workspaceRoot}",
