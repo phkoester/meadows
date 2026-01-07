@@ -7,7 +7,7 @@
 
 Meadows is an experimental library written in Rust.
 
-**NOTE:** For the time being, it is not recommended for public use. Use it at your own risk.
+**Note:** For the time being, it is not recommended for public use. Use it at your own risk.
 
 ## License
 
