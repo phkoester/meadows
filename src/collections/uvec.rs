@@ -80,7 +80,7 @@ where
 
   /// Inserts a value at position `index` within the vector, shifting all elements after it to the right.
   ///
-  /// Returns `true` if the operation succeeds.
+  /// Returns whether the operation succeeds.
   ///
   /// # Panics
   ///
@@ -109,7 +109,7 @@ where
     false
   }
 
-  /// Returns `true` if the vector contains no elements.
+  /// Checks if the vector contains no elements.
   #[inline]
   #[must_use]
   pub fn is_empty(&self) -> bool { self.vec.is_empty() }
@@ -143,7 +143,7 @@ where
 
   /// Appends a value to the back of the vector.
   ///
-  /// Returns `true` if the operation succeeds.
+  /// Returns whether the operation succeeds.
   pub fn push(&mut self, val: V) -> bool {
     let key = (self.key)(&val);
     if let Some(key) = key && self.set.insert(key) {

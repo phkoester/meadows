@@ -22,7 +22,7 @@ pub enum ExecType {
 }
 
 impl ExecType {
-  /// Returns `true` if the executable type denotes a test executable.
+  /// Checks if the executable type denotes a test executable.
   #[must_use]
   pub fn is_test(&self) -> bool { !matches!(self, Self::Binary | Self::Example) }
 }

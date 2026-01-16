@@ -93,7 +93,7 @@ pub enum FindError {
 }
 
 impl FindError {
-  /// Returns `true` if the error should be printed.
+  /// Checks if the error should be printed.
   #[must_use]
   pub fn should_print(&self) -> bool { !matches!(self, Self::FileNotFound) }
 }
