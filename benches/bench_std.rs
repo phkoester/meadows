@@ -7,13 +7,13 @@
 // Functions ------------------------------------------------------------------------------------------------
 
 #[inline]
-fn use_string_from(v: &str) -> String { String::from(v) }
+fn use_string_from(val: &str) -> String { String::from(val) }
 
 #[inline]
-fn use_str_to_owned(v: &str) -> String { v.to_owned() }
+fn use_str_to_owned(val: &str) -> String { val.to_owned() }
 
 #[inline]
-fn use_str_to_string(v: &str) -> String { v.to_string() }
+fn use_str_to_string(val: &str) -> String { val.to_string() }
 
 // Tests ----------------------------------------------------------------------------------------------------
 
