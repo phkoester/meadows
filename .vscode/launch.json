@@ -8,7 +8,7 @@
     {
       "type": "lldb-dap",
       "request": "launch",
-      "name": "meadows-env",
+      "name": "meadows-env (debug)",
       "program": "${workspaceRoot}/target/debug/meadows-env",
       "args": [],
       "env": [],
