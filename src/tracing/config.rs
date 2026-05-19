@@ -180,7 +180,10 @@ fn init_file(config: &Config, file: &Path) -> Result<ArcMutexGuard, InitError> {
 pub fn init(config: &Config) -> &'static ArcMutexGuard {
   static VAL: OnceLock<ArcMutexGuard> = OnceLock::new();
   VAL.get_or_init(|| {
-    assert!(config.exec_type != ExecType::Binary);
+    assert!(
+      config.exec_type == ExecType::Binary ||
+      config.exec_type == ExecType::UnitTest ||
+      config.exec_type == ExecType::IntegTest);
     match try_init_impl(config) {
       Ok(guard) => guard,
       Err(err) => panic!("{:?}", anyhow::Error::from(err).context("Cannot initialize logging")),
@@ -277,7 +280,7 @@ Path             : {path:?}
 /// }
 #[allow(clippy::needless_doctest_main)]
 pub fn try_init(config: &Config) -> Result<ArcMutexGuard, InitError> {
-  assert!(config.exec_type == ExecType::Binary);
+  assert_eq!(config.exec_type, ExecType::Binary);
   try_init_impl(config)
 }
 
