@@ -2,9 +2,12 @@
 # .gitignore
 #
 
+/compile_commands.json
+/.cache/
+/build/
 /target/
 
 *.log
-*.profraw
+*.log.gz
 
 # EOF

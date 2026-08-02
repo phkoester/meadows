@@ -183,7 +183,8 @@ pub fn init(config: &Config) -> &'static ArcMutexGuard {
     assert!(
       config.exec_type == ExecType::Binary ||
       config.exec_type == ExecType::UnitTest ||
-      config.exec_type == ExecType::IntegTest);
+      config.exec_type == ExecType::IntegTest ||
+      config.exec_type == ExecType::BenchTest);
     match try_init_impl(config) {
       Ok(guard) => guard,
       Err(err) => panic!("{:?}", anyhow::Error::from(err).context("Cannot initialize logging")),
