@@ -5,9 +5,8 @@
 [![docs](https://docs.rs/meadows/badge.svg)](https://docs.rs/meadows)
 [![rust](https://img.shields.io/badge/rust-1.91.1%2B-orange.svg)](https://releases.rs/docs/1.91.1)
 
-Meadows is an experimental library written in Rust.
-
-**Note:** For the time being, it is not recommended for public use. Use it at your own risk.
+Meadows is a general-purpose library written in Rust, helping you to create cross-platform CLI and GUI
+applications.
 
 ## License
 
@@ -18,9 +17,3 @@ Licensed under either of
 - MIT license ([LICENSE-MIT](LICENSE-MIT) or http://opensource.org/licenses/MIT)
 
 at your option.
-
-## Contribution
-
-Unless you explicitly state otherwise, any contribution intentionally submitted for inclusion in the work by
-you, as defined in the Apache-2.0 license, shall be dual licensed as above, without any additional terms or
-conditions.
