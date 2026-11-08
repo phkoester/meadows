@@ -85,7 +85,7 @@ pub fn inv_dir() -> &'static PathBuf {
 
 /// Returns the invocation name of the executable.
 ///
-/// In Windows, this is the file stem only. In Unix, this is the file name.
+/// On Windows, this is the file stem only. In Unix, this is the file name.
 #[allow(clippy::missing_panics_doc)]
 #[must_use]
 pub fn inv_name() -> &'static OsString {
@@ -119,7 +119,7 @@ pub fn inv_path() -> &'static PathBuf {
 
 /// Returns the canonical name of the executable.
 ///
-/// In Windows, this is the file stem only. In Unix, this is the file name.
+/// On Windows, this is the file stem only. In Unix, this is the file name.
 #[allow(clippy::missing_panics_doc)]
 #[must_use]
 pub fn name() -> &'static OsString {

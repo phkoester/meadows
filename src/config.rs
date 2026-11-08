@@ -46,7 +46,7 @@ pub enum ConfigLevel {
   /// System-level configuration.
   ///
   /// Configuration files at system level reside relative to a system-dependent directory. On Unix systems,
-  /// this is `/etc`. On Windows, this is `%PROGRAMDATA%`, e.g. `C:\ProgramData`.
+  /// this is `/etc`. On Windows, this is `%PROGRAMDATA%`, e.g., `C:\ProgramData`.
   System,
   /// User-level configuration.
   ///
@@ -185,7 +185,7 @@ pub fn find_config_file<Paths: AsRef<OsStr>>(
 /// | :--------------------- | :----------
 /// | `${config_dir}`        | A system-dependent directory as returned by [`dirs::config_dir`]
 /// | `${config_local_dir}`  | A system-dependent directory as returned by [`dirs::config_local_dir`]
-/// | `${home_dir}`          | The user's home directory as returned by [`dirs::home_dir`], e.g. `/home/alice`
+/// | `${home_dir}`          | The user's home directory as returned by [`dirs::home_dir`], e.g., `/home/alice`
 /// | `${inv_dir}`           | The invocation directory as returned by [`inv_dir`]
 /// | `${manifest_dir}`      | The package's manifest directory. This applies only if the executable is run via Cargo
 /// | `${name}`              | `name`
