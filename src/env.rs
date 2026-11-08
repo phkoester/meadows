@@ -182,7 +182,7 @@ pub fn set<K: AsRef<OsStr>, V: AsRef<OsStr>>(key: K, value: Option<V>) {
   }
 }
 
-/// Returns the path to the system's configuration directory.
+/// Returns the path to the system’s configuration directory.
 ///
 /// The returned value depends on the operating system and is either a [`Some`], containing a value from the
 /// following table, or a [`None`].

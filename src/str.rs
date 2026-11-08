@@ -6,7 +6,7 @@
 
 /// An extension trait for strings.
 ///
-/// This is included in the crate's [prelude](crate::prelude).
+/// This is included in the crate’s [prelude](crate::prelude).
 pub trait StrExt {
   /// Creates a new [`String`] by enclosing this string in backticks.
   ///

@@ -4,7 +4,7 @@
 
 //! Math module.
 //!
-//! There's not much we can do right now except test inline math such as $\sum_{i=1}^{n} i =
+//! There’s not much we can do right now except test inline math such as $\sum_{i=1}^{n} i =
 //! \frac{n(n+1)}{2}$.
 //!
 //! Testing $\KaTeX$, not to be confused with $\LaTeX$. Here are some examples:

@@ -60,7 +60,7 @@ pub enum ConfigLevel {
   Local,
   /// Package-level configuration.
   ///
-  /// Configuration files at package level reside relative to the package's manifest directory. For those to
+  /// Configuration files at package level reside relative to the package’s manifest directory. For those to
   /// be found, the executable must be run via Cargo and the environment variable `CARGO_MANIFEST_DIR` must
   /// be set.
   Package,
@@ -162,7 +162,7 @@ pub fn find_config_file<Paths: AsRef<OsStr>>(
 /// | Name        | `exec_type`      | Description
 /// | :---------- | :--------------- | :-----------
 /// | `dir`       | Any              | The canonical directory of the executable, as returned by [`dir`]
-/// | `home_dir`  | Any              | The current user's home directory, as returned by [`dirs::home_dir`]
+/// | `home_dir`  | Any              | The current user’s home directory, as returned by [`dirs::home_dir`]
 /// | `name`      | Any              | The canonical name of the executable, as returned by [`name`]
 /// | `path`      | Any              | The canonical path of the executable, as returned by [`path`]
 /// | `pid`       | Any              | The process ID (PID) of the executable
@@ -185,9 +185,9 @@ pub fn find_config_file<Paths: AsRef<OsStr>>(
 /// | :--------------------- | :----------
 /// | `${config_dir}`        | A system-dependent directory as returned by [`dirs::config_dir`]
 /// | `${config_local_dir}`  | A system-dependent directory as returned by [`dirs::config_local_dir`]
-/// | `${home_dir}`          | The user's home directory as returned by [`dirs::home_dir`], e.g., `/home/alice`
+/// | `${home_dir}`          | The user’s home directory as returned by [`dirs::home_dir`], e.g., `/home/alice`
 /// | `${inv_dir}`           | The invocation directory as returned by [`inv_dir`]
-/// | `${manifest_dir}`      | The package's manifest directory. This applies only if the executable is run via Cargo
+/// | `${manifest_dir}`      | The package’s manifest directory. This applies only if the executable is run via Cargo
 /// | `${name}`              | `name`
 /// | `${path}`              | Each path from `paths`, which is separated by the system-dependent path separator. Each path may point to a file or directory. This applies only if `paths` is a [`Some`]
 /// | `${system_config_dir}` | A system-dependent directory as returned by [`system_config_dir`]

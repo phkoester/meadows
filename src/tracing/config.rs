@@ -2,7 +2,7 @@
 
 //! Initialize `tracing` using a TOML file.
 //!
-//! It is a wrapper around the [`tracing_config`] crate, using Meadows's configuration-file search from
+//! It is a wrapper around the [`tracing_config`] crate, using Meadows’s configuration-file search from
 //! [`crate::config`].
 //!
 //! For binary executables, use the [`try_init`] function. For example and test executables, use the [`init`]
