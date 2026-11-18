@@ -1,8 +1,6 @@
-#
 # rustfmt.toml
 #
 # Documentation: https://rust-lang.github.io/rustfmt/
-#
 
 binop_separator = "Back"
 blank_lines_upper_bound = 1

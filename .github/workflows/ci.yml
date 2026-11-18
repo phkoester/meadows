@@ -1,6 +1,4 @@
-#
 # ci.yml
-#
 
 name: CI
 
@@ -33,10 +31,10 @@ jobs:
         components: clippy
     - name: Build
       run: cargo build --verbose
-    # Run "Clippy" on Ubuntu only---one platform is enough 
+    # Run "Clippy" on Ubuntu only---one platform is enough
     - name: Clippy
       run: cargo +nightly clippy --all-targets --all-features
-    # Run "Doc" on Ubuntu only---one platform is enough 
+    # Run "Doc" on Ubuntu only---one platform is enough
     - name: Doc
       run: cargo doc --all-features --no-deps
     - name: Test

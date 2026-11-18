@@ -1,10 +1,8 @@
-#
 # test_tracing_config.tracing.toml
 #
 # A detailed example file can be found here:
 #
 #   https://docs.rs/tracing-config/latest/tracing_config/config/model/index.html
-#
 
 title = "test_tracing_config"
 
