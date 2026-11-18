@@ -1,6 +1,4 @@
-/*
- * gaia-project.json
- */
+// gaia-project.json
 
 {
   "dependencies": ["gaia"]
