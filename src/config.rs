@@ -363,7 +363,7 @@ fn find_config_files_impl<Paths: AsRef<OsStr>>(
         let level_str = format!("{level:?}");
         let bullet = if path.is_file() { "*" } else { "" };
         debug!(stdout, "{level_str:<10} | {bullet:<1} {path:?}")?;
-        // In debug mode, we don't return quickly
+        // In debug mode, we don’t return quickly
         Ok(None)
       } else if find_one && path.is_file() {
         Ok(Some((level, path)))
