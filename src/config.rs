@@ -197,9 +197,9 @@ pub fn find_config_file<Paths: AsRef<OsStr>>(
 ///
 /// | Configuration Level | `exec_type`               | Path
 /// | :------------------ | :------------------------ | :---
-/// | [`Path`]            | Any                       | `${path}`
-/// | [`Path`]            | Any                       | `${path}/.${name}.config.toml`
-/// | [`Path`]            | Any                       | `${path}/.${name}/config.toml`
+/// | [`Path`]            | any                       | `${path}`
+/// | [`Path`]            | any                       | `${path}/.${name}.config.toml`
+/// | [`Path`]            | any                       | `${path}/.${name}/config.toml`
 /// | [`Instance`]        | [`Binary`]                | `/home/alice/.${name}.config.toml`
 /// | [`Instance`]        | [`Binary`]                | `/home/alice/.${name}/config.toml`
 /// | [`Instance`]        | [`Binary`]                | `/home/.${name}.config.toml`
