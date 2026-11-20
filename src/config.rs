@@ -161,15 +161,15 @@ pub fn find_config_file<Paths: AsRef<OsStr>>(
 ///
 /// | Name        | `exec_type`      | Description
 /// | :---------- | :--------------- | :-----------
-/// | `dir`       | Any              | The canonical directory of the executable, as returned by [`dir`]
-/// | `home_dir`  | Any              | The current user’s home directory, as returned by [`dirs::home_dir`]
-/// | `name`      | Any              | The canonical name of the executable, as returned by [`name`]
-/// | `path`      | Any              | The canonical path of the executable, as returned by [`path`]
-/// | `pid`       | Any              | The process ID (PID) of the executable
-/// | `inv_dir`   | [`Binary`]       | The invocation directory of the executable, as returned by [`inv_dir`]
-/// | `inv_name`  | [`Binary`]       | The invocation name of the executable, as returned by [`inv_name`]
-/// | `inv_path`  | [`Binary`]       | The invocation path of the executable, as returned by [`inv_path`]
-/// | `test_name` | Test executables | The canonical test name of the executable, as returned by [`test_name`]
+/// | `dir`       | any              | the canonical directory of the executable, as returned by [`dir`]
+/// | `home_dir`  | any              | the current user’s home directory, as returned by [`dirs::home_dir`]
+/// | `name`      | any              | the canonical name of the executable, as returned by [`name`]
+/// | `path`      | any              | the canonical path of the executable, as returned by [`path`]
+/// | `pid`       | any              | the process ID (PID) of the executable
+/// | `inv_dir`   | [`Binary`]       | the invocation directory of the executable, as returned by [`inv_dir`]
+/// | `inv_name`  | [`Binary`]       | the invocation name of the executable, as returned by [`inv_name`]
+/// | `inv_path`  | [`Binary`]       | the invocation path of the executable, as returned by [`inv_path`]
+/// | `test_name` | test executables | the canonical test name of the executable, as returned by [`test_name`]
 ///
 /// # File Search
 ///
@@ -183,14 +183,14 @@ pub fn find_config_file<Paths: AsRef<OsStr>>(
 ///
 /// | Placeholder            | Description
 /// | :--------------------- | :----------
-/// | `${config_dir}`        | A system-dependent directory as returned by [`dirs::config_dir`]
-/// | `${config_local_dir}`  | A system-dependent directory as returned by [`dirs::config_local_dir`]
-/// | `${home_dir}`          | The user’s home directory as returned by [`dirs::home_dir`], e.g., `/home/alice`
-/// | `${inv_dir}`           | The invocation directory as returned by [`inv_dir`]
-/// | `${manifest_dir}`      | The package’s manifest directory. This applies only if the executable is run via Cargo
+/// | `${config_dir}`        | a system-dependent directory as returned by [`dirs::config_dir`]
+/// | `${config_local_dir}`  | a system-dependent directory as returned by [`dirs::config_local_dir`]
+/// | `${home_dir}`          | the user’s home directory as returned by [`dirs::home_dir`], e.g., `/home/alice`
+/// | `${inv_dir}`           | the invocation directory as returned by [`inv_dir`]
+/// | `${manifest_dir}`      | the package’s manifest directory. This applies only if the executable is run via Cargo
 /// | `${name}`              | `name`
-/// | `${path}`              | Each path from `paths`, which is separated by the system-dependent path separator. Each path may point to a file or directory. This applies only if `paths` is a [`Some`]
-/// | `${system_config_dir}` | A system-dependent directory as returned by [`system_config_dir`]
+/// | `${path}`              | each path from `paths`, which is separated by the system-dependent path separator. Each path may point to a file or directory. This applies only if `paths` is a [`Some`]
+/// | `${system_config_dir}` | a system-dependent directory as returned by [`system_config_dir`]
 ///
 /// The function probes the following paths, from highest to lowest priority, in the exact order shown, if
 /// they point to existing files:
